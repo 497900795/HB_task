@@ -1,0 +1,286 @@
+Microsoft (R) Macro Assembler Version 6.11		    07/03/18 16:50:12
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码 
+ 0000 0B				BLUE DB 0BH
+ 0001 0C				RED DB 0CH
+ 0002 0F				WHITE DB 0FH
+ 0003				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    ;此处输入代码段代码
+				    
+				    
+				    
+				    ;绘制边框
+				;只写首尾的行
+					   WRITESIMPLE MACRO
+				    	 ;只写首尾
+				        MOV CX,1
+				        ;光标移动
+				        MOV DL,0;首
+				        MOV AH,2
+				        INT 10H
+				        ;写'*'
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				        MOV DL,1;首
+				        MOV AH,2
+				        INT 10H
+				        ;写'*'
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				        ;光标移动
+				        MOV DL,79;尾
+				        MOV AH,2
+				        INT 10H
+				        ;写'*'
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				         MOV DL,78;尾
+				        MOV AH,2
+				        INT 10H
+				        ;写'*'
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				        INC DH
+				        ENDM
+				;写满一行  
+				        WRITEFULL MACRO
+				        MOV CX,80
+				        ;光标移动
+				        MOV DL,0
+				        MOV AH,2
+				        INT 10H
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				        INC DH
+				        ENDM
+				;绘制边框
+				     DRAWBORDER MACRO
+				    	LOCAL NEXTLINE,FULL,FIN
+				        XOR DX,DX
+				        XOR BX,BX
+				    NEXTLINE:
+				        CMP DH,0
+				        JZ FULL
+				        CMP DH,24
+				        JZ FULL
+				        CMP DH,25
+				        JAE FIN
+				       	WRITESIMPLE
+				        JMP NEXTLINE
+				        ;写满一行
+				        FULL:
+				       	WRITEFULL
+				        JMP NEXTLINE
+				        FIN:
+				    ENDM
+				    
+				    
+				    DRAWRECT MACRO X1,Y1,X2,Y2,COLOR
+				    	LOCAL ROW,COL
+				    	XOR BX,BX
+				    	XOR CX,CX
+				    	XOR DX,DX
+				    	MOV AH,0CH
+				    	MOV AL,COLOR
+				    	MOV DX,Y1
+				    	MOV CX,X1
+				    	ROW:
+				    		MOV CX,X1
+				    		COL:INT 10H
+				    			INC CX
+				    			CMP CX,X2
+				    			JB COL
+				    		INC DX
+				    		CMP DX,Y2
+				    		JB ROW
+				    ENDM
+				    
+				    
+				    DRAWLEVEL1 MACRO
+				    	DRAWRECT 100,60,500,70,BLUE
+				    	DRAWRECT 100,120,450,130,BLUE
+				    	DRAWRECT 450,120,460,250,BLUE
+				    	DRAWRECT 500,60,510,250,BLUE
+				    	DRAWRECT 460,240,500,250,RED
+				    ENDM
+				    
+				    
+				    COLORSHOW MACRO
+					    MOV AH,0
+					    MOV AL,10H
+					    INT 10H
+				    ENDM
+				    
+				    WORDSHOW MACRO
+					    MOV AH,0
+					    MOV AL,2
+					    INT 10H
+				    ENDM
+				    
+				   
+				    COLORSHOW
+ 0005  B4 00		     1		    MOV AH,0
+ 0007  B0 10		     1		    MOV AL,10H
+ 0009  CD 10		     1		    INT 10H
+				    DRAWLEVEL1
+ 000B  33 DB		     2	    	XOR BX,BX
+ 000D  33 C9		     2	    	XOR CX,CX
+ 000F  33 D2		     2	    	XOR DX,DX
+ 0011  B4 0C		     2	    	MOV AH,0CH
+ 0013  A0 0000 R	     2	    	MOV AL,BLUE
+ 0016  BA 003C		     2	    	MOV DX,60
+ 0019  B9 0064		     2	    	MOV CX,100
+ 001C			     2	    	??0000:
+ 001C  B9 0064		     2	    		MOV CX,100
+ 001F  CD 10		     2	    		??0001:INT 10H
+ 0021  41		     2	    			INC CX
+ 0022  81 F9 01F4	     2	    			CMP CX,500
+ 0026  72 F7		     2	    			JB ??0001
+ 0028  42		     2	    		INC DX
+ 0029  83 FA 46		     2	    		CMP DX,70
+ 002C  72 EE		     2	    		JB ??0000
+ 002E  33 DB		     2	    	XOR BX,BX
+ 0030  33 C9		     2	    	XOR CX,CX
+ 0032  33 D2		     2	    	XOR DX,DX
+ 0034  B4 0C		     2	    	MOV AH,0CH
+ 0036  A0 0000 R	     2	    	MOV AL,BLUE
+ 0039  BA 0078		     2	    	MOV DX,120
+ 003C  B9 0064		     2	    	MOV CX,100
+ 003F			     2	    	??0002:
+ 003F  B9 0064		     2	    		MOV CX,100
+ 0042  CD 10		     2	    		??0003:INT 10H
+ 0044  41		     2	    			INC CX
+ 0045  81 F9 01C2	     2	    			CMP CX,450
+ 0049  72 F7		     2	    			JB ??0003
+ 004B  42		     2	    		INC DX
+ 004C  81 FA 0082	     2	    		CMP DX,130
+ 0050  72 ED		     2	    		JB ??0002
+ 0052  33 DB		     2	    	XOR BX,BX
+ 0054  33 C9		     2	    	XOR CX,CX
+ 0056  33 D2		     2	    	XOR DX,DX
+ 0058  B4 0C		     2	    	MOV AH,0CH
+ 005A  A0 0000 R	     2	    	MOV AL,BLUE
+ 005D  BA 0078		     2	    	MOV DX,120
+ 0060  B9 01C2		     2	    	MOV CX,450
+ 0063			     2	    	??0004:
+ 0063  B9 01C2		     2	    		MOV CX,450
+ 0066  CD 10		     2	    		??0005:INT 10H
+ 0068  41		     2	    			INC CX
+ 0069  81 F9 01CC	     2	    			CMP CX,460
+ 006D  72 F7		     2	    			JB ??0005
+ 006F  42		     2	    		INC DX
+ 0070  81 FA 00FA	     2	    		CMP DX,250
+ 0074  72 ED		     2	    		JB ??0004
+ 0076  33 DB		     2	    	XOR BX,BX
+ 0078  33 C9		     2	    	XOR CX,CX
+ 007A  33 D2		     2	    	XOR DX,DX
+ 007C  B4 0C		     2	    	MOV AH,0CH
+ 007E  A0 0000 R	     2	    	MOV AL,BLUE
+ 0081  BA 003C		     2	    	MOV DX,60
+ 0084  B9 01F4		     2	    	MOV CX,500
+ 0087			     2	    	??0006:
+ 0087  B9 01F4		     2	    		MOV CX,500
+ 008A  CD 10		     2	    		??0007:INT 10H
+ 008C  41		     2	    			INC CX
+ 008D  81 F9 01FE	     2	    			CMP CX,510
+ 0091  72 F7		     2	    			JB ??0007
+ 0093  42		     2	    		INC DX
+ 0094  81 FA 00FA	     2	    		CMP DX,250
+ 0098  72 ED		     2	    		JB ??0006
+ 009A  33 DB		     2	    	XOR BX,BX
+ 009C  33 C9		     2	    	XOR CX,CX
+ 009E  33 D2		     2	    	XOR DX,DX
+ 00A0  B4 0C		     2	    	MOV AH,0CH
+ 00A2  A0 0001 R	     2	    	MOV AL,RED
+ 00A5  BA 00F0		     2	    	MOV DX,240
+ 00A8  B9 01CC		     2	    	MOV CX,460
+ 00AB			     2	    	??0008:
+ 00AB  B9 01CC		     2	    		MOV CX,460
+ 00AE  CD 10		     2	    		??0009:INT 10H
+ 00B0  41		     2	    			INC CX
+ 00B1  81 F9 01F4	     2	    			CMP CX,500
+ 00B5  72 F7		     2	    			JB ??0009
+ 00B7  42		     2	    		INC DX
+ 00B8  81 FA 00FA	     2	    		CMP DX,250
+ 00BC  72 ED		     2	    		JB ??0008
+				    
+				    
+ 00BE  B4 01			    MOV AH,1
+ 00C0  CD 21			   	INT 21H
+				   
+				    
+				   
+ 00C2  B4 4C			    MOV AH,4CH
+ 00C4  CD 21			    INT 21H
+ 00C6				CODES ENDS
+				    END START
+
+
+
+Microsoft (R) Macro Assembler Version 6.11		    07/03/18 16:50:12
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+COLORSHOW  . . . . . . . . . . .	Proc
+DRAWBORDER . . . . . . . . . . .	Proc
+DRAWLEVEL1 . . . . . . . . . . .	Proc
+DRAWRECT . . . . . . . . . . . .	Proc
+WORDSHOW . . . . . . . . . . . .	Proc
+WRITEFULL  . . . . . . . . . . .	Proc
+WRITESIMPLE  . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 00C6	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0003	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+??0000 . . . . . . . . . . . . .	L Near	 001C	  CODES	
+??0001 . . . . . . . . . . . . .	L Near	 001F	  CODES	
+??0002 . . . . . . . . . . . . .	L Near	 003F	  CODES	
+??0003 . . . . . . . . . . . . .	L Near	 0042	  CODES	
+??0004 . . . . . . . . . . . . .	L Near	 0063	  CODES	
+??0005 . . . . . . . . . . . . .	L Near	 0066	  CODES	
+??0006 . . . . . . . . . . . . .	L Near	 0087	  CODES	
+??0007 . . . . . . . . . . . . .	L Near	 008A	  CODES	
+??0008 . . . . . . . . . . . . .	L Near	 00AB	  CODES	
+??0009 . . . . . . . . . . . . .	L Near	 00AE	  CODES	
+BLUE . . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+RED  . . . . . . . . . . . . . .	Byte	 0001	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+WHITE  . . . . . . . . . . . . .	Byte	 0002	  DATAS	
+
+	   0 Warnings
+	   0 Errors

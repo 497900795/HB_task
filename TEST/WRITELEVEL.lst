@@ -1,0 +1,75 @@
+Microsoft (R) Macro Assembler Version 6.11		    07/03/18 17:27:39
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码
+ 0000 4C 45 56 45 4C 2E		    FILETEXT DB 'LEVEL.txt',00H
+       74 78 74 00
+ 000A 31 00			    LEVELNUM1 DB '1',00H
+ 000C 0000			    HANDLE DW ? 
+ 000E				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    ;此处输入代码段代码
+				    
+ 0005  B4 3D			    MOV AH,3DH
+ 0007  B9 0000			    MOV CX,0
+ 000A  8D 16 0000 R		    LEA DX,FILETEXT
+ 000E  B0 01			    MOV AL,1
+ 0010  CD 21			    INT 21H
+ 0012  A3 000C R		    MOV HANDLE,AX
+				    
+				  
+				    
+ 0015  B4 40			    MOV AH,40H
+ 0017  8B 1E 000C R		    MOV BX,HANDLE
+ 001B  8D 16 000A R		    LEA DX,LEVELNUM1
+ 001F  B9 0001			    MOV CX,1
+ 0022  CD 21			    INT 21H
+				    
+				   
+				    
+ 0024  B4 3E			    MOV AH,3EH
+ 0026  8B 1E 000C R		    MOV BX,HANDLE
+ 002A  CD 21			    INT 21H
+				    
+ 002C  B4 4C			    MOV AH,4CH
+ 002E  CD 21			    INT 21H
+ 0030				CODES ENDS
+				    END START
+
+Microsoft (R) Macro Assembler Version 6.11		    07/03/18 17:27:39
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 0030	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 000E	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+FILETEXT . . . . . . . . . . . .	Byte	 0000	  DATAS	
+HANDLE . . . . . . . . . . . . .	Word	 000C	  DATAS	
+LEVELNUM1  . . . . . . . . . . .	Byte	 000A	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+
+	   0 Warnings
+	   0 Errors

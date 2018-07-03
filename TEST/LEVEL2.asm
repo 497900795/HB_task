@@ -1,0 +1,74 @@
+DATAS SEGMENT
+    ;此处输入数据段代码
+     BLUE DB 0BH
+	 RED DB 0CH
+	 WHITE DB 0FH    
+DATAS ENDS
+
+STACKS SEGMENT
+    ;此处输入堆栈段代码
+STACKS ENDS
+
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    ;此处输入代码段代码
+    
+    
+       ;绘制矩形,来拼出场景
+    ;参数分别为第一个点的坐标,第二个点的坐标,颜色
+     DRAWRECT MACRO X1,Y1,X2,Y2,COLOR
+    	LOCAL ROW,COL
+    	XOR BX,BX
+    	XOR CX,CX
+    	XOR DX,DX
+    	MOV AH,0CH
+    	MOV AL,COLOR
+    	MOV DX,Y1
+    	MOV CX,X1
+    	ROW:
+    		MOV CX,X1
+    		COL:INT 10H
+    			INC CX
+    			CMP CX,X2
+    			JB COL
+    		INC DX
+    		CMP DX,Y2
+    		JB ROW
+    ENDM
+
+
+    ;彩色绘图模式
+    COLORSHOW MACRO
+	    MOV AH,0
+	    MOV AL,10H
+	    INT 10H
+    ENDM
+    
+    ;文字显示模式
+    WORDSHOW MACRO
+	    MOV AH,0
+	    MOV AL,2
+	    INT 10H
+    ENDM
+    
+    DRAWLEVEL2 MACRO
+    	DRAWRECT 100,60,500,70,BLUE
+    	DRAWRECT 100,120,450,130,BLUE
+    	DRAWRECT 450,120,460,240,BLUE
+    	DRAWRECT 500,60,510,280,BLUE
+    	DRAWRECT 300,240,460,250,BLUE
+    	DRAWRECT 300,280,510,290,BLUE
+    	DRAWRECT 300,250,310,280,RED
+    ENDM
+    
+    COLORSHOW
+    DRAWLEVEL2
+    
+    
+    MOV AH,4CH
+    INT 21H
+CODES ENDS
+    END START

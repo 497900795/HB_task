@@ -1,0 +1,182 @@
+Microsoft (R) Macro Assembler Version 6.11		    07/03/18 10:45:15
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码  
+ 0000				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    ;此处输入代码段代码
+				    
+				    WRITESIMPLE MACRO
+				    	 ;只写首尾
+				        MOV CX,1
+				        ;光标移动
+				        MOV DL,0;首
+				        MOV AH,2
+				        INT 10H
+				        ;写'*'
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				        MOV DL,1;首
+				        MOV AH,2
+				        INT 10H
+				        ;写'*'
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				        ;光标移动
+				        MOV DL,79;尾
+				        MOV AH,2
+				        INT 10H
+				        ;写'*'
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				         MOV DL,78;尾
+				        MOV AH,2
+				        INT 10H
+				        ;写'*'
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				        INC DH
+				        ENDM
+				        
+				        WRITEFULL MACRO
+				        MOV CX,80
+				        ;光标移动
+				        MOV DL,0
+				        MOV AH,2
+				        INT 10H
+				        MOV AL,'*'
+				        MOV AH,0AH
+				        INT 10H
+				        INC DH
+				        ENDM
+				    
+				    
+				     DRAWBORDER MACRO
+				    	LOCAL NEXTLINE,FULL,FIN
+				        XOR DX,DX
+				        XOR BX,BX
+				    NEXTLINE:
+				        CMP DH,0
+				        JZ FULL
+				        CMP DH,24
+				        JZ FULL
+				        CMP DH,25
+				        JAE FIN
+				       	WRITESIMPLE
+				        JMP NEXTLINE
+				        ;写满一行
+				        FULL:
+				       	WRITEFULL
+				        JMP NEXTLINE
+				        FIN:
+				    ENDM
+				    
+				    
+				    DRAWBORDER
+ 0005  33 D2		     1	        XOR DX,DX
+ 0007  33 DB		     1	        XOR BX,BX
+ 0009			     1	    ??0000:
+ 0009  80 FE 00		     1	        CMP DH,0
+ 000C  74 41		     1	        JZ ??0001
+ 000E  80 FE 18		     1	        CMP DH,24
+ 0011  74 3C		     1	        JZ ??0001
+ 0013  80 FE 19		     1	        CMP DH,25
+ 0016  73 4A		     1	        JAE ??0002
+ 0018  B9 0001		     2	        MOV CX,1
+ 001B  B2 00		     2	        MOV DL,0;首
+ 001D  B4 02		     2	        MOV AH,2
+ 001F  CD 10		     2	        INT 10H
+ 0021  B0 2A		     2	        MOV AL,'*'
+ 0023  B4 0A		     2	        MOV AH,0AH
+ 0025  CD 10		     2	        INT 10H
+ 0027  B2 01		     2	        MOV DL,1;首
+ 0029  B4 02		     2	        MOV AH,2
+ 002B  CD 10		     2	        INT 10H
+ 002D  B0 2A		     2	        MOV AL,'*'
+ 002F  B4 0A		     2	        MOV AH,0AH
+ 0031  CD 10		     2	        INT 10H
+ 0033  B2 4F		     2	        MOV DL,79;尾
+ 0035  B4 02		     2	        MOV AH,2
+ 0037  CD 10		     2	        INT 10H
+ 0039  B0 2A		     2	        MOV AL,'*'
+ 003B  B4 0A		     2	        MOV AH,0AH
+ 003D  CD 10		     2	        INT 10H
+ 003F  B2 4E		     2	         MOV DL,78;尾
+ 0041  B4 02		     2	        MOV AH,2
+ 0043  CD 10		     2	        INT 10H
+ 0045  B0 2A		     2	        MOV AL,'*'
+ 0047  B4 0A		     2	        MOV AH,0AH
+ 0049  CD 10		     2	        INT 10H
+ 004B  FE C6		     2	        INC DH
+ 004D  EB BA		     1	        JMP ??0000
+ 004F			     1	        ??0001:
+ 004F  B9 0050		     2	        MOV CX,80
+ 0052  B2 00		     2	        MOV DL,0
+ 0054  B4 02		     2	        MOV AH,2
+ 0056  CD 10		     2	        INT 10H
+ 0058  B0 2A		     2	        MOV AL,'*'
+ 005A  B4 0A		     2	        MOV AH,0AH
+ 005C  CD 10		     2	        INT 10H
+ 005E  FE C6		     2	        INC DH
+ 0060  EB A7		     1	        JMP ??0000
+ 0062			     1	        ??0002:
+ 0062  B4 01			    MOV AH,1
+ 0064  CD 21			    INT 21H
+ 0066  B4 4C			    MOV AH,4CH
+ 0068  CD 21			    INT 21H
+				    
+				 
+ 006A				CODES ENDS
+				    END START
+
+
+Microsoft (R) Macro Assembler Version 6.11		    07/03/18 10:45:15
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+DRAWBORDER . . . . . . . . . . .	Proc
+WRITEFULL  . . . . . . . . . . .	Proc
+WRITESIMPLE  . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 006A	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+??0000 . . . . . . . . . . . . .	L Near	 0009	  CODES	
+??0001 . . . . . . . . . . . . .	L Near	 004F	  CODES	
+??0002 . . . . . . . . . . . . .	L Near	 0062	  CODES	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+
+	   0 Warnings
+	   0 Errors

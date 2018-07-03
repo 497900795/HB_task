@@ -1,0 +1,43 @@
+DATAS SEGMENT
+    ;此处输入数据段代码
+    FILETEXT DB 'LEVEL.txt',00H
+    LEVELNUM1 DB '1',00H
+    HANDLE DW ? 
+DATAS ENDS
+
+STACKS SEGMENT
+    ;此处输入堆栈段代码
+STACKS ENDS
+
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    ;此处输入代码段代码
+    
+    MOV AH,3DH
+    MOV CX,0
+    LEA DX,FILETEXT
+    MOV AL,1
+    INT 21H
+    MOV HANDLE,AX
+    
+  
+    
+    MOV AH,40H
+    MOV BX,HANDLE
+    LEA DX,LEVELNUM1
+    MOV CX,1
+    INT 21H
+    
+   
+    
+    MOV AH,3EH
+    MOV BX,HANDLE
+    INT 21H
+    
+    MOV AH,4CH
+    INT 21H
+CODES ENDS
+    END START
