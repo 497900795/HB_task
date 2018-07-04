@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/03/18 16:50:12
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 14:47:27
 tempfile.asm						     Page 1 - 1
 
 
@@ -113,7 +113,7 @@ tempfile.asm						     Page 1 - 1
 				    		JB ROW
 				    ENDM
 				    
-				    
+				    ;绘制第一关
 				    DRAWLEVEL1 MACRO
 				    	DRAWRECT 100,60,500,70,BLUE
 				    	DRAWRECT 100,120,450,130,BLUE
@@ -235,7 +235,8 @@ tempfile.asm						     Page 1 - 1
 
 
 
-Microsoft (R) Macro Assembler Version 6.11		    07/03/18 16:50:12
+
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 14:47:27
 tempfile.asm						     Symbols 2 - 1
 
 

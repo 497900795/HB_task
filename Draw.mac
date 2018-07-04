@@ -269,3 +269,79 @@ DRAWSTART MACRO
         DRAWRECT 590,110,600,220,RED
         LOADBARRIER
     ENDM
+
+
+
+     ;玩家移动,小写wasd控制 
+    PLYMOVE MACRO X1,Y1,X2,Y2
+        LOCAL MUP,MDOWN,MLEFT,MRIGHT
+        MOV AH,7
+        INT 21H
+        PUSH AX     
+        DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,BLACK
+        POP AX
+        CMP AL,'w'
+        JZ MUP
+        CMP AL,'a'
+        JZ MLEFT
+        CMP AL,'s'
+        JZ MDOWN
+        CMP AL,'d'
+        JZ MRIGHT
+        JMP FINSTEP
+        ;上
+        MUP:
+        MOVEUP Y1,Y2
+        JMP FINSTEP
+        ;下
+        MDOWN:
+        MOVEDOWN Y1,Y2
+        JMP FINSTEP
+        ;左
+        MLEFT:
+        MOVELEFT X1,X2
+        JMP FINSTEP
+        ;右
+        MRIGHT:
+        MOVERIGHT X1,X2
+        JMP FINSTEP
+        ;移动结束,重新画图
+        FINSTEP:
+        DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
+    ENDM
+    
+    MOVEUP MACRO Y1,Y2
+        MOV CX,Y1
+        MOV DX,Y2
+        SUB CX,5
+        SUB DX,5
+        MOV Y1,CX
+        MOV Y2,DX
+    ENDM
+    
+    MOVEDOWN MACRO Y1,Y2
+        MOV CX,Y1
+        MOV DX,Y2
+        ADD CX,5
+        ADD DX,5
+        MOV Y1,CX
+        MOV Y2,DX
+    ENDM
+    
+    MOVELEFT MACRO X1,X2
+        MOV CX,X1
+        MOV DX,X2
+        SUB CX,5
+        SUB DX,5
+        MOV X1,CX
+        MOV X2,DX
+    ENDM
+    
+    MOVERIGHT MACRO X1,X2
+        MOV CX,X1
+        MOV DX,X2
+        ADD CX,5
+        ADD DX,5
+        MOV X1,CX
+        MOV X2,DX
+    ENDM
