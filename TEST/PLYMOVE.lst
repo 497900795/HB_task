@@ -1,16 +1,18 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 16:03:39
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 16:44:33
 tempfile.asm						     Page 1 - 1
 
 
  0000				DATAS SEGMENT
 				    ;此处输入数据段代码
- 0000 0F			    WHITE DB 0FH
- 0001 00			    BLACK DB 0
- 0002 0064			    PLYX1 DW 100
- 0004 0064			    PLYY1 DW 100
- 0006 0078			    PLYX2 DW 120
- 0008 0078			    PLYY2 DW 120
- 000A				DATAS ENDS
+ 0000 0B			    BLUE DB 0BH
+ 0001 0C				RED DB 0CH
+ 0002 0F			    WHITE DB 0FH
+ 0003 00			    BLACK DB 0
+ 0004 0064			    PLYX1 DW 100
+ 0006 0064			    PLYY1 DW 100
+ 0008 0078			    PLYX2 DW 120
+ 000A 0078			    PLYY2 DW 120
+ 000C				DATAS ENDS
 
  0000				STACKS SEGMENT
 				    ;此处输入堆栈段代码
@@ -127,126 +129,237 @@ tempfile.asm						     Page 1 - 1
 				    	MOV X2,DX
 				    ENDM
 				    
-				    ;JUDEGEDIE X,Y
+				    JUDGE MACRO X,Y
+				    	LOCAL FINJUD
+				    	MOV CX,X
+				    	MOV DX,Y
+				    	XOR BX,BX
 				    	
-				   ; ENDM
+				    	;POINT1
+				    	MOV AH,0DH
+				    	INT 10H
+				    	CMP AL,BLUE
+				    	JZ FINJUD
+				    	CMP AL,RED
+				    	JZ FINJUD
+				    	   	
+				    	;POINT2
+				    	PUSH CX
+				    	ADD CX,20
+				    	MOV AH,0DH
+				    	INT 10H
+				    	CMP AL,BLUE
+				    	JZ FINJUD
+				    	CMP AL,RED
+				    	JZ FINJUD
+				    	POP CX
+				    	
+				    	;POINT3
+				    	PUSH CX
+				    	PUSH DX
+				    	ADC CX,20
+				    	ADC DX,20
+				    	MOV AH,0DH
+				    	INT 10H
+				    	CMP AL,BLUE
+				    	JZ FINJUD
+				    	CMP AL,RED
+				    	JZ FINJUD
+				    	POP DX
+				    	POP CX
+				    	
+				    	;POINT4
+				    	PUSH DX
+				    	ADC DX,20
+				    	MOV AH,0DH
+				    	INT 10H
+				    	CMP AL,BLUE
+				    	JZ FINJUD
+				    	CMP AL,RED
+				    	JZ FINJUD
+				    	POP DX
+				    	
+
+				    	FINJUD:
+				    ENDM
 				    
 				    COLORSHOW
  0005  B4 00		     1		    MOV AH,0
  0007  B0 10		     1		    MOV AL,10H
  0009  CD 10		     1		    INT 10H
-				    DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
+				    DRAWRECT 200,150,500,200,BLUE
  000B  33 DB		     1	    	XOR BX,BX
  000D  33 C9		     1	    	XOR CX,CX
  000F  33 D2		     1	    	XOR DX,DX
  0011  B4 0C		     1	    	MOV AH,0CH
- 0013  A0 0000 R	     1	    	MOV AL,WHITE
- 0016  8B 16 0004 R	     1	    	MOV DX,PLYY1
- 001A  8B 0E 0002 R	     1	    	MOV CX,PLYX1
- 001E			     1	    	??0000:
- 001E  8B 0E 0002 R	     1	    		MOV CX,PLYX1
- 0022  CD 10		     1	    		??0001:INT 10H
- 0024  41		     1	    			INC CX
- 0025  3B 0E 0006 R	     1	    			CMP CX,PLYX2
- 0029  72 F7		     1	    			JB ??0001
- 002B  42		     1	    		INC DX
- 002C  3B 16 0008 R	     1	    		CMP DX,PLYY2
- 0030  72 EC		     1	    		JB ??0000
-				    
- 0032				    NEXTSTEP:
-				    ;读像素判断死亡,死亡则跳转到死亡界面
-				    ;入口参数为左上定点的坐标,出口影响AL
-					;JUDEGEDIE PLYX1,PLYY1
+ 0013  A0 0000 R	     1	    	MOV AL,BLUE
+ 0016  BA 0096		     1	    	MOV DX,150
+ 0019  B9 00C8		     1	    	MOV CX,200
+ 001C			     1	    	??0000:
+ 001C  B9 00C8		     1	    		MOV CX,200
+ 001F  CD 10		     1	    		??0001:INT 10H
+ 0021  41		     1	    			INC CX
+ 0022  81 F9 01F4	     1	    			CMP CX,500
+ 0026  72 F7		     1	    			JB ??0001
+ 0028  42		     1	    		INC DX
+ 0029  81 FA 00C8	     1	    		CMP DX,200
+ 002D  72 ED		     1	    		JB ??0000
+				    DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
+ 002F  33 DB		     1	    	XOR BX,BX
+ 0031  33 C9		     1	    	XOR CX,CX
+ 0033  33 D2		     1	    	XOR DX,DX
+ 0035  B4 0C		     1	    	MOV AH,0CH
+ 0037  A0 0002 R	     1	    	MOV AL,WHITE
+ 003A  8B 16 0006 R	     1	    	MOV DX,PLYY1
+ 003E  8B 0E 0004 R	     1	    	MOV CX,PLYX1
+ 0042			     1	    	??0002:
+ 0042  8B 0E 0004 R	     1	    		MOV CX,PLYX1
+ 0046  CD 10		     1	    		??0003:INT 10H
+ 0048  41		     1	    			INC CX
+ 0049  3B 0E 0008 R	     1	    			CMP CX,PLYX2
+ 004D  72 F7		     1	    			JB ??0003
+ 004F  42		     1	    		INC DX
+ 0050  3B 16 000A R	     1	    		CMP DX,PLYY2
+ 0054  72 EC		     1	    		JB ??0002
+				   
+ 0056				    NEXTSTEP:
+				    ;读像素判断
+				    ;入口参数为左上定点的坐标,出口是结果
+				    ;死亡1
+				    ;胜利2
+					JUDGE PLYX1,PLYY1
+ 0056  8B 0E 0004 R	     1	    	MOV CX,PLYX1
+ 005A  8B 16 0006 R	     1	    	MOV DX,PLYY1
+ 005E  33 DB		     1	    	XOR BX,BX
+ 0060  B4 0D		     1	    	MOV AH,0DH
+ 0062  CD 10		     1	    	INT 10H
+ 0064  3A 06 0000 R	     1	    	CMP AL,BLUE
+ 0068  74 4A		     1	    	JZ ??0004
+ 006A  3A 06 0001 R	     1	    	CMP AL,RED
+ 006E  74 44		     1	    	JZ ??0004
+ 0070  51		     1	    	PUSH CX
+ 0071  83 C1 14		     1	    	ADD CX,20
+ 0074  B4 0D		     1	    	MOV AH,0DH
+ 0076  CD 10		     1	    	INT 10H
+ 0078  3A 06 0000 R	     1	    	CMP AL,BLUE
+ 007C  74 36		     1	    	JZ ??0004
+ 007E  3A 06 0001 R	     1	    	CMP AL,RED
+ 0082  74 30		     1	    	JZ ??0004
+ 0084  59		     1	    	POP CX
+ 0085  51		     1	    	PUSH CX
+ 0086  52		     1	    	PUSH DX
+ 0087  83 D1 14		     1	    	ADC CX,20
+ 008A  83 D2 14		     1	    	ADC DX,20
+ 008D  B4 0D		     1	    	MOV AH,0DH
+ 008F  CD 10		     1	    	INT 10H
+ 0091  3A 06 0000 R	     1	    	CMP AL,BLUE
+ 0095  74 1D		     1	    	JZ ??0004
+ 0097  3A 06 0001 R	     1	    	CMP AL,RED
+ 009B  74 17		     1	    	JZ ??0004
+ 009D  5A		     1	    	POP DX
+ 009E  59		     1	    	POP CX
+ 009F  52		     1	    	PUSH DX
+ 00A0  83 D2 14		     1	    	ADC DX,20
+ 00A3  B4 0D		     1	    	MOV AH,0DH
+ 00A5  CD 10		     1	    	INT 10H
+ 00A7  3A 06 0000 R	     1	    	CMP AL,BLUE
+ 00AB  74 07		     1	    	JZ ??0004
+ 00AD  3A 06 0001 R	     1	    	CMP AL,RED
+ 00B1  74 01		     1	    	JZ ??0004
+ 00B3  5A		     1	    	POP DX
+ 00B4			     1	    	??0004:
+ 00B4  3A 06 0000 R			CMP AL,BLUE
+ 00B8  75 03 E9 00C9			JZ FIN
 				    ;不死则移动
 				    PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
- 0032  B4 07		     1	   		MOV AH,7
- 0034  CD 21		     1	    	INT 21H
- 0036  50		     1	    	PUSH AX  	
- 0037  33 DB		     2	    	XOR BX,BX
- 0039  33 C9		     2	    	XOR CX,CX
- 003B  33 D2		     2	    	XOR DX,DX
- 003D  B4 0C		     2	    	MOV AH,0CH
- 003F  A0 0001 R	     2	    	MOV AL,BLACK
- 0042  8B 16 0004 R	     2	    	MOV DX,PLYY1
- 0046  8B 0E 0002 R	     2	    	MOV CX,PLYX1
- 004A			     2	    	??0006:
- 004A  8B 0E 0002 R	     2	    		MOV CX,PLYX1
- 004E  CD 10		     2	    		??0007:INT 10H
- 0050  41		     2	    			INC CX
- 0051  3B 0E 0006 R	     2	    			CMP CX,PLYX2
- 0055  72 F7		     2	    			JB ??0007
- 0057  42		     2	    		INC DX
- 0058  3B 16 0008 R	     2	    		CMP DX,PLYY2
- 005C  72 EC		     2	    		JB ??0006
- 005E  58		     1	    	POP AX
- 005F  3C 77		     1	    	CMP AL,'w'
- 0061  74 0E		     1	    	JZ ??0002
- 0063  3C 61		     1	    	CMP AL,'a'
- 0065  74 3A		     1	    	JZ ??0004
- 0067  3C 73		     1	    	CMP AL,'s'
- 0069  74 1E		     1	    	JZ ??0003
- 006B  3C 64		     1	    	CMP AL,'d'
- 006D  74 4A		     1	    	JZ ??0005
- 006F  EB 60		     1	    	JMP FINSTEP
- 0071			     1	    	??0002:
- 0071  8B 0E 0004 R	     2	    	MOV CX,PLYY1
- 0075  8B 16 0008 R	     2	    	MOV DX,PLYY2
- 0079  83 E9 05		     2	    	SUB CX,5
- 007C  83 EA 05		     2	    	SUB DX,5
- 007F  89 0E 0004 R	     2	    	MOV PLYY1,CX
- 0083  89 16 0008 R	     2	    	MOV PLYY2,DX
- 0087  EB 48		     1	    	JMP FINSTEP
- 0089			     1	    	??0003:
- 0089  8B 0E 0004 R	     2	    	MOV CX,PLYY1
- 008D  8B 16 0008 R	     2	    	MOV DX,PLYY2
- 0091  83 C1 05		     2	    	ADD CX,5
- 0094  83 C2 05		     2	    	ADD DX,5
- 0097  89 0E 0004 R	     2	    	MOV PLYY1,CX
- 009B  89 16 0008 R	     2	    	MOV PLYY2,DX
- 009F  EB 30		     1	    	JMP FINSTEP
- 00A1			     1	    	??0004:
- 00A1  8B 0E 0002 R	     2	    	MOV CX,PLYX1
- 00A5  8B 16 0006 R	     2	    	MOV DX,PLYX2
- 00A9  83 E9 05		     2	    	SUB CX,5
- 00AC  83 EA 05		     2	    	SUB DX,5
- 00AF  89 0E 0002 R	     2	    	MOV PLYX1,CX
- 00B3  89 16 0006 R	     2	    	MOV PLYX2,DX
- 00B7  EB 18		     1	    	JMP FINSTEP
- 00B9			     1	    	??0005:
- 00B9  8B 0E 0002 R	     2	    	MOV CX,PLYX1
- 00BD  8B 16 0006 R	     2	    	MOV DX,PLYX2
- 00C1  83 C1 05		     2	    	ADD CX,5
- 00C4  83 C2 05		     2	    	ADD DX,5
- 00C7  89 0E 0002 R	     2	    	MOV PLYX1,CX
- 00CB  89 16 0006 R	     2	    	MOV PLYX2,DX
- 00CF  EB 00		     1	    	JMP FINSTEP
- 00D1			     1	    	FINSTEP:
- 00D1  33 DB		     2	    	XOR BX,BX
- 00D3  33 C9		     2	    	XOR CX,CX
- 00D5  33 D2		     2	    	XOR DX,DX
- 00D7  B4 0C		     2	    	MOV AH,0CH
- 00D9  A0 0000 R	     2	    	MOV AL,WHITE
- 00DC  8B 16 0004 R	     2	    	MOV DX,PLYY1
- 00E0  8B 0E 0002 R	     2	    	MOV CX,PLYX1
- 00E4			     2	    	??0008:
- 00E4  8B 0E 0002 R	     2	    		MOV CX,PLYX1
- 00E8  CD 10		     2	    		??0009:INT 10H
- 00EA  41		     2	    			INC CX
- 00EB  3B 0E 0006 R	     2	    			CMP CX,PLYX2
- 00EF  72 F7		     2	    			JB ??0009
- 00F1  42		     2	    		INC DX
- 00F2  3B 16 0008 R	     2	    		CMP DX,PLYY2
- 00F6  72 EC		     2	    		JB ??0008
+ 00BD  B4 07		     1	   		MOV AH,7
+ 00BF  CD 21		     1	    	INT 21H
+ 00C1  50		     1	    	PUSH AX  	
+ 00C2  33 DB		     2	    	XOR BX,BX
+ 00C4  33 C9		     2	    	XOR CX,CX
+ 00C6  33 D2		     2	    	XOR DX,DX
+ 00C8  B4 0C		     2	    	MOV AH,0CH
+ 00CA  A0 0003 R	     2	    	MOV AL,BLACK
+ 00CD  8B 16 0006 R	     2	    	MOV DX,PLYY1
+ 00D1  8B 0E 0004 R	     2	    	MOV CX,PLYX1
+ 00D5			     2	    	??0009:
+ 00D5  8B 0E 0004 R	     2	    		MOV CX,PLYX1
+ 00D9  CD 10		     2	    		??000A:INT 10H
+ 00DB  41		     2	    			INC CX
+ 00DC  3B 0E 0008 R	     2	    			CMP CX,PLYX2
+ 00E0  72 F7		     2	    			JB ??000A
+ 00E2  42		     2	    		INC DX
+ 00E3  3B 16 000A R	     2	    		CMP DX,PLYY2
+ 00E7  72 EC		     2	    		JB ??0009
+ 00E9  58		     1	    	POP AX
+ 00EA  3C 77		     1	    	CMP AL,'w'
+ 00EC  74 0E		     1	    	JZ ??0005
+ 00EE  3C 61		     1	    	CMP AL,'a'
+ 00F0  74 3A		     1	    	JZ ??0007
+ 00F2  3C 73		     1	    	CMP AL,'s'
+ 00F4  74 1E		     1	    	JZ ??0006
+ 00F6  3C 64		     1	    	CMP AL,'d'
+ 00F8  74 4A		     1	    	JZ ??0008
+ 00FA  EB 60		     1	    	JMP FINSTEP
+ 00FC			     1	    	??0005:
+ 00FC  8B 0E 0006 R	     2	    	MOV CX,PLYY1
+ 0100  8B 16 000A R	     2	    	MOV DX,PLYY2
+ 0104  83 E9 05		     2	    	SUB CX,5
+ 0107  83 EA 05		     2	    	SUB DX,5
+ 010A  89 0E 0006 R	     2	    	MOV PLYY1,CX
+ 010E  89 16 000A R	     2	    	MOV PLYY2,DX
+ 0112  EB 48		     1	    	JMP FINSTEP
+ 0114			     1	    	??0006:
+ 0114  8B 0E 0006 R	     2	    	MOV CX,PLYY1
+ 0118  8B 16 000A R	     2	    	MOV DX,PLYY2
+ 011C  83 C1 05		     2	    	ADD CX,5
+ 011F  83 C2 05		     2	    	ADD DX,5
+ 0122  89 0E 0006 R	     2	    	MOV PLYY1,CX
+ 0126  89 16 000A R	     2	    	MOV PLYY2,DX
+ 012A  EB 30		     1	    	JMP FINSTEP
+ 012C			     1	    	??0007:
+ 012C  8B 0E 0004 R	     2	    	MOV CX,PLYX1
+ 0130  8B 16 0008 R	     2	    	MOV DX,PLYX2
+ 0134  83 E9 05		     2	    	SUB CX,5
+ 0137  83 EA 05		     2	    	SUB DX,5
+ 013A  89 0E 0004 R	     2	    	MOV PLYX1,CX
+ 013E  89 16 0008 R	     2	    	MOV PLYX2,DX
+ 0142  EB 18		     1	    	JMP FINSTEP
+ 0144			     1	    	??0008:
+ 0144  8B 0E 0004 R	     2	    	MOV CX,PLYX1
+ 0148  8B 16 0008 R	     2	    	MOV DX,PLYX2
+ 014C  83 C1 05		     2	    	ADD CX,5
+ 014F  83 C2 05		     2	    	ADD DX,5
+ 0152  89 0E 0004 R	     2	    	MOV PLYX1,CX
+ 0156  89 16 0008 R	     2	    	MOV PLYX2,DX
+ 015A  EB 00		     1	    	JMP FINSTEP
+ 015C			     1	    	FINSTEP:
+ 015C  33 DB		     2	    	XOR BX,BX
+ 015E  33 C9		     2	    	XOR CX,CX
+ 0160  33 D2		     2	    	XOR DX,DX
+ 0162  B4 0C		     2	    	MOV AH,0CH
+ 0164  A0 0002 R	     2	    	MOV AL,WHITE
+ 0167  8B 16 0006 R	     2	    	MOV DX,PLYY1
+ 016B  8B 0E 0004 R	     2	    	MOV CX,PLYX1
+ 016F			     2	    	??000B:
+ 016F  8B 0E 0004 R	     2	    		MOV CX,PLYX1
+ 0173  CD 10		     2	    		??000C:INT 10H
+ 0175  41		     2	    			INC CX
+ 0176  3B 0E 0008 R	     2	    			CMP CX,PLYX2
+ 017A  72 F7		     2	    			JB ??000C
+ 017C  42		     2	    		INC DX
+ 017D  3B 16 000A R	     2	    		CMP DX,PLYY2
+ 0181  72 EC		     2	    		JB ??000B
 				    
- 00F8  E9 FF37			    JMP NEXTSTEP
-				    
- 00FB  B4 4C			    MOV AH,4CH
- 00FD  CD 21			    INT 21H
- 00FF				CODES ENDS
+ 0183  E9 FED0			    JMP NEXTSTEP
+ 0186				     FIN:    
+ 0186  B4 4C			    MOV AH,4CH
+ 0188  CD 21			    INT 21H
+ 018A				CODES ENDS
 				    END START
 
 
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 16:03:39
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 16:44:33
 tempfile.asm						     Symbols 2 - 1
 
 
@@ -258,6 +371,7 @@ Macros:
 
 COLORSHOW  . . . . . . . . . . .	Proc
 DRAWRECT . . . . . . . . . . . .	Proc
+JUDGE  . . . . . . . . . . . . .	Proc
 MOVEDOWN . . . . . . . . . . . .	Proc
 MOVELEFT . . . . . . . . . . . .	Proc
 MOVERIGHT  . . . . . . . . . . .	Proc
@@ -269,8 +383,8 @@ Segments and Groups:
 
                 N a m e                 Size     Length   Align   Combine Class
 
-CODES  . . . . . . . . . . . . .	16 Bit	 00FF	  Para	  Private 
-DATAS  . . . . . . . . . . . . .	16 Bit	 000A	  Para	  Private 
+CODES  . . . . . . . . . . . . .	16 Bit	 018A	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 000C	  Para	  Private 
 STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
 
 
@@ -278,25 +392,31 @@ Symbols:
 
                 N a m e                 Type     Value    Attr
 
-??0000 . . . . . . . . . . . . .	L Near	 001E	  CODES	
-??0001 . . . . . . . . . . . . .	L Near	 0022	  CODES	
-??0002 . . . . . . . . . . . . .	L Near	 0071	  CODES	
-??0003 . . . . . . . . . . . . .	L Near	 0089	  CODES	
-??0004 . . . . . . . . . . . . .	L Near	 00A1	  CODES	
-??0005 . . . . . . . . . . . . .	L Near	 00B9	  CODES	
-??0006 . . . . . . . . . . . . .	L Near	 004A	  CODES	
-??0007 . . . . . . . . . . . . .	L Near	 004E	  CODES	
-??0008 . . . . . . . . . . . . .	L Near	 00E4	  CODES	
-??0009 . . . . . . . . . . . . .	L Near	 00E8	  CODES	
-BLACK  . . . . . . . . . . . . .	Byte	 0001	  DATAS	
-FINSTEP  . . . . . . . . . . . .	L Near	 00D1	  CODES	
-NEXTSTEP . . . . . . . . . . . .	L Near	 0032	  CODES	
-PLYX1  . . . . . . . . . . . . .	Word	 0002	  DATAS	
-PLYX2  . . . . . . . . . . . . .	Word	 0006	  DATAS	
-PLYY1  . . . . . . . . . . . . .	Word	 0004	  DATAS	
-PLYY2  . . . . . . . . . . . . .	Word	 0008	  DATAS	
+??0000 . . . . . . . . . . . . .	L Near	 001C	  CODES	
+??0001 . . . . . . . . . . . . .	L Near	 001F	  CODES	
+??0002 . . . . . . . . . . . . .	L Near	 0042	  CODES	
+??0003 . . . . . . . . . . . . .	L Near	 0046	  CODES	
+??0004 . . . . . . . . . . . . .	L Near	 00B4	  CODES	
+??0005 . . . . . . . . . . . . .	L Near	 00FC	  CODES	
+??0006 . . . . . . . . . . . . .	L Near	 0114	  CODES	
+??0007 . . . . . . . . . . . . .	L Near	 012C	  CODES	
+??0008 . . . . . . . . . . . . .	L Near	 0144	  CODES	
+??0009 . . . . . . . . . . . . .	L Near	 00D5	  CODES	
+??000A . . . . . . . . . . . . .	L Near	 00D9	  CODES	
+??000B . . . . . . . . . . . . .	L Near	 016F	  CODES	
+??000C . . . . . . . . . . . . .	L Near	 0173	  CODES	
+BLACK  . . . . . . . . . . . . .	Byte	 0003	  DATAS	
+BLUE . . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+FINSTEP  . . . . . . . . . . . .	L Near	 015C	  CODES	
+FIN  . . . . . . . . . . . . . .	L Near	 0186	  CODES	
+NEXTSTEP . . . . . . . . . . . .	L Near	 0056	  CODES	
+PLYX1  . . . . . . . . . . . . .	Word	 0004	  DATAS	
+PLYX2  . . . . . . . . . . . . .	Word	 0008	  DATAS	
+PLYY1  . . . . . . . . . . . . .	Word	 0006	  DATAS	
+PLYY2  . . . . . . . . . . . . .	Word	 000A	  DATAS	
+RED  . . . . . . . . . . . . . .	Byte	 0001	  DATAS	
 START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
-WHITE  . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+WHITE  . . . . . . . . . . . . .	Byte	 0002	  DATAS	
 
 	   0 Warnings
 	   0 Errors

@@ -1,5 +1,7 @@
 DATAS SEGMENT
     ;此处输入数据段代码
+    BLUE DB 0BH
+	RED DB 0CH
     WHITE DB 0FH
     BLACK DB 0
     PLYX1 DW 100
@@ -123,22 +125,77 @@ START:
     	MOV X2,DX
     ENDM
     
-    ;JUDEGEDIE X,Y
+    JUDGE MACRO X,Y
+    	LOCAL FINJUD
+    	MOV CX,X
+    	MOV DX,Y
+    	XOR BX,BX
     	
-   ; ENDM
+    	;POINT1
+    	MOV AH,0DH
+    	INT 10H
+    	CMP AL,BLUE
+    	JZ FINJUD
+    	CMP AL,RED
+    	JZ FINJUD
+    	   	
+    	;POINT2
+    	PUSH CX
+    	ADD CX,20
+    	MOV AH,0DH
+    	INT 10H
+    	CMP AL,BLUE
+    	JZ FINJUD
+    	CMP AL,RED
+    	JZ FINJUD
+    	POP CX
+    	
+    	;POINT3
+    	PUSH CX
+    	PUSH DX
+    	ADC CX,20
+    	ADC DX,20
+    	MOV AH,0DH
+    	INT 10H
+    	CMP AL,BLUE
+    	JZ FINJUD
+    	CMP AL,RED
+    	JZ FINJUD
+    	POP DX
+    	POP CX
+    	
+    	;POINT4
+    	PUSH DX
+    	ADC DX,20
+    	MOV AH,0DH
+    	INT 10H
+    	CMP AL,BLUE
+    	JZ FINJUD
+    	CMP AL,RED
+    	JZ FINJUD
+    	POP DX
+    	
+
+    	FINJUD:
+    ENDM
     
     COLORSHOW
+    DRAWRECT 200,150,500,200,BLUE
     DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
-    
+   
     NEXTSTEP:
-    ;读像素判断死亡,死亡则跳转到死亡界面
-    ;入口参数为左上定点的坐标,出口影响AL
-	;JUDEGEDIE PLYX1,PLYY1
+    ;读像素判断
+    ;入口参数为左上定点的坐标,出口是某个点读到的死亡颜色或者胜利颜色
+    ;死亡 BLUE
+    ;胜利 RED
+	JUDGE PLYX1,PLYY1
+	CMP AL,BLUE
+	JZ FIN
     ;不死则移动
     PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
     
     JMP NEXTSTEP
-    
+     FIN:    
     MOV AH,4CH
     INT 21H
 CODES ENDS
