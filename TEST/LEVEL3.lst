@@ -1,0 +1,370 @@
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 14:39:46
+tempfile.asm						     Page 1 - 1
+
+
+
+				;                       _oo0oo_
+				;                      o8888888o
+				;                      88" . "88
+				;                      (| -_- |)
+				;                      0\  =  /0
+				;                    ___/`---'\___
+				;                  .' \\|     |// '.
+				;                / \\|||  :  |||// \
+				;                / _||||| -:- |||||- \
+				;               |   | \\\  -  /// |   |
+				;              | \_|  ''\---/''  |_/ |
+				;               \  .-\__  '-'  ___/-. /
+				;            ___'. .'  /--.--\  `. .'___
+				;          ."" '<  `.___\_<|>_/___.' >' "".
+				;         | | :  `- \`.;`\ _ /`;.`/ - ` : | |
+				;         \  \ `_.   \_ __\ /__ _/   .-` /  /
+				;     =====`-.____`.___ \_____/___.-`___.-'=====
+				;                      `=---='
+				;
+				;
+				;     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+				;              佛祖保佑         永无BUG
+
+
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码
+ 0000 0B			     BLUE DB 0BH
+ 0001 0C				 RED DB 0CH
+ 0002 0F				 WHITE DB 0FH
+ 0003 0000				 DELTX1 DW ?
+ 0005 0000				 DELTY1 DW ?
+ 0007 0000				 DELTX2 DW ?
+ 0009 0000				 DELTY2 DW ?
+ 000B 0050 00DC 012C 01B8		 POSX1 DW 80,220,300,440,520
+       0208
+ 0015 006E 0096 00B4 008C		 POSY1 DW 110,150,180,140,155
+       009B
+ 001F 0064 00F5 0145 01CC		 POSX2 DW 100,245,325,460,550
+       0226
+ 0029 0082 00AA 00C3 00A0		 POSY2 DW 130,170,195,160,165
+       00A5
+ 0033 0000				 TEMP DW ? 
+ 0035				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    ;此处输入代码段代码
+				    
+				    
+				    DRAWRECT MACRO X1,Y1,X2,Y2,COLOR
+				    	LOCAL ROW,COL
+				    	XOR BX,BX
+				    	XOR CX,CX
+				    	XOR DX,DX
+				    	MOV AH,0CH
+				    	MOV AL,COLOR
+				    	MOV DX,Y1
+				    	MOV CX,X1
+				    	ROW:
+				    	MOV CX,X1
+				    	COL:INT 10H
+				    	INC CX
+				    	CMP CX,X2
+				    	JB COL
+				   		INC DX
+				    	CMP DX,Y2
+				    	JB ROW
+				    ENDM
+
+
+				    ;彩色绘图模式
+				    COLORSHOW MACRO
+					    MOV AH,0
+					    MOV AL,10H
+					    INT 10H
+				    ENDM
+				    
+				    ;文字显示模式
+				    WORDSHOW MACRO 
+					    MOV AH,0
+					    MOV AL,2
+					    INT 10H
+				    ENDM
+				    
+				    
+				    
+				    ;随机数
+				    RANNUM MACRO RAN1,RAN2,RAN3,RAN4
+				      ;第一次
+				      MOV AH,0             ;读时钟计数器值
+				      INT 1AH
+				      MOV AX,DX            
+				      AND AH,3
+				      MOV DL,21          ;做除法,余数为随机数
+				      DIV DL
+				      XOR BX,BX
+				      MOV BL,AH
+				      MOV RAN1,BX
+				      ;第二次
+				      MOV AH,0             ;读时钟计数器值
+				      INT 1AH
+				      MOV AX,DX            
+				      AND AH,3
+				      MOV DL,26           ;做除法,余数为随机数
+				      DIV DL
+				      XOR BX,BX
+				      MOV BL,AH
+				      MOV RAN2,BX
+				      ;第三次
+				      MOV AH,0             ;读时钟计数器值
+				      INT 1AH
+				      MOV AX,DX            
+				      AND AH,3
+				      MOV DL,11          ;做除法,余数为随机数
+				      DIV DL
+				      XOR BX,BX
+				      MOV BL,AH
+				      MOV RAN3,BX   
+				      ;第四次
+				      MOV AH,0             ;读时钟计数器值
+				      INT 1AH
+				      MOV AX,DX            
+				      AND AH,3
+				      MOV DL,16           ;做除法,余数为随机数
+				      DIV DL
+				      XOR BX,BX
+				      MOV BL,AH
+				      MOV RAN4,BX                  
+				    ENDM
+				   
+				    ;加载随机障碍,算法为获取随机数种子
+				    ;产生四个随机数,作为障碍物的偏移
+				    ;偏移施加到点的原始值
+				    LOADBARRIER MACRO
+				    	LOCAL NEXTPOINT
+				    	RANNUM DELTX1,DELTX2,DELTY1,DELTY2
+				    	XOR SI,SI
+				    	
+				    	NEXTBARRIER:
+				    	MOV AX,DELTX1
+				    	ADD AX,POSX1[SI]
+				    	MOV POSX1[SI],AX
+				    	MOV AX,DELTY1
+				    	ADD AX,POSY1[SI]
+				    	MOV POSY1[SI],AX
+				    	MOV AX,DELTX2
+				    	ADD AX,POSX2[SI]
+				    	MOV POSX2[SI],AX
+				    	MOV AX,DELTY2
+				    	ADD AX,POSY2[SI]
+				    	MOV POSY2[SI],AX
+				    	
+				    	
+				    	DRAWRECT POSX1[SI],POSY1[SI],POSX2[SI],POSY2[SI],BLUE
+				    	INC SI
+				    	INC SI
+				    	CMP SI,10
+				    	JB NEXTBARRIER 
+				    ENDM
+				    
+				   	;第三关,平行线内随机生成障碍
+				   	DRAWLEVEL3 MACRO
+				   		;先绘制边框,后生成随机障碍物
+				   		DRAWRECT 80,100,600,110,BLUE
+				    	DRAWRECT 80,220,600,230,BLUE
+				    	DRAWRECT 590,110,600,220,RED
+				    	LOADBARRIER
+				   	ENDM
+				   	
+				   	COLORSHOW
+ 0005  B4 00		     1		    MOV AH,0
+ 0007  B0 10		     1		    MOV AL,10H
+ 0009  CD 10		     1		    INT 10H
+				   	DRAWLEVEL3
+ 000B  33 DB		     2	    	XOR BX,BX
+ 000D  33 C9		     2	    	XOR CX,CX
+ 000F  33 D2		     2	    	XOR DX,DX
+ 0011  B4 0C		     2	    	MOV AH,0CH
+ 0013  A0 0000 R	     2	    	MOV AL,BLUE
+ 0016  BA 0064		     2	    	MOV DX,100
+ 0019  B9 0050		     2	    	MOV CX,80
+ 001C			     2	    	??0000:
+ 001C  B9 0050		     2	    	MOV CX,80
+ 001F  CD 10		     2	    	??0001:INT 10H
+ 0021  41		     2	    	INC CX
+ 0022  81 F9 0258	     2	    	CMP CX,600
+ 0026  72 F7		     2	    	JB ??0001
+ 0028  42		     2	   		INC DX
+ 0029  83 FA 6E		     2	    	CMP DX,110
+ 002C  72 EE		     2	    	JB ??0000
+ 002E  33 DB		     2	    	XOR BX,BX
+ 0030  33 C9		     2	    	XOR CX,CX
+ 0032  33 D2		     2	    	XOR DX,DX
+ 0034  B4 0C		     2	    	MOV AH,0CH
+ 0036  A0 0000 R	     2	    	MOV AL,BLUE
+ 0039  BA 00DC		     2	    	MOV DX,220
+ 003C  B9 0050		     2	    	MOV CX,80
+ 003F			     2	    	??0002:
+ 003F  B9 0050		     2	    	MOV CX,80
+ 0042  CD 10		     2	    	??0003:INT 10H
+ 0044  41		     2	    	INC CX
+ 0045  81 F9 0258	     2	    	CMP CX,600
+ 0049  72 F7		     2	    	JB ??0003
+ 004B  42		     2	   		INC DX
+ 004C  81 FA 00E6	     2	    	CMP DX,230
+ 0050  72 ED		     2	    	JB ??0002
+ 0052  33 DB		     2	    	XOR BX,BX
+ 0054  33 C9		     2	    	XOR CX,CX
+ 0056  33 D2		     2	    	XOR DX,DX
+ 0058  B4 0C		     2	    	MOV AH,0CH
+ 005A  A0 0001 R	     2	    	MOV AL,RED
+ 005D  BA 006E		     2	    	MOV DX,110
+ 0060  B9 024E		     2	    	MOV CX,590
+ 0063			     2	    	??0004:
+ 0063  B9 024E		     2	    	MOV CX,590
+ 0066  CD 10		     2	    	??0005:INT 10H
+ 0068  41		     2	    	INC CX
+ 0069  81 F9 0258	     2	    	CMP CX,600
+ 006D  72 F7		     2	    	JB ??0005
+ 006F  42		     2	   		INC DX
+ 0070  81 FA 00DC	     2	    	CMP DX,220
+ 0074  72 ED		     2	    	JB ??0004
+ 0076  B4 00		     3	      MOV AH,0             ;读时钟计数器值
+ 0078  CD 1A		     3	      INT 1AH
+ 007A  8B C2		     3	      MOV AX,DX            
+ 007C  80 E4 03		     3	      AND AH,3
+ 007F  B2 15		     3	      MOV DL,21          ;做除法,余数为随机数
+ 0081  F6 F2		     3	      DIV DL
+ 0083  33 DB		     3	      XOR BX,BX
+ 0085  8A DC		     3	      MOV BL,AH
+ 0087  89 1E 0003 R	     3	      MOV DELTX1,BX
+ 008B  B4 00		     3	      MOV AH,0             ;读时钟计数器值
+ 008D  CD 1A		     3	      INT 1AH
+ 008F  8B C2		     3	      MOV AX,DX            
+ 0091  80 E4 03		     3	      AND AH,3
+ 0094  B2 1A		     3	      MOV DL,26           ;做除法,余数为随机数
+ 0096  F6 F2		     3	      DIV DL
+ 0098  33 DB		     3	      XOR BX,BX
+ 009A  8A DC		     3	      MOV BL,AH
+ 009C  89 1E 0007 R	     3	      MOV DELTX2,BX
+ 00A0  B4 00		     3	      MOV AH,0             ;读时钟计数器值
+ 00A2  CD 1A		     3	      INT 1AH
+ 00A4  8B C2		     3	      MOV AX,DX            
+ 00A6  80 E4 03		     3	      AND AH,3
+ 00A9  B2 0B		     3	      MOV DL,11          ;做除法,余数为随机数
+ 00AB  F6 F2		     3	      DIV DL
+ 00AD  33 DB		     3	      XOR BX,BX
+ 00AF  8A DC		     3	      MOV BL,AH
+ 00B1  89 1E 0005 R	     3	      MOV DELTY1,BX   
+ 00B5  B4 00		     3	      MOV AH,0             ;读时钟计数器值
+ 00B7  CD 1A		     3	      INT 1AH
+ 00B9  8B C2		     3	      MOV AX,DX            
+ 00BB  80 E4 03		     3	      AND AH,3
+ 00BE  B2 10		     3	      MOV DL,16           ;做除法,余数为随机数
+ 00C0  F6 F2		     3	      DIV DL
+ 00C2  33 DB		     3	      XOR BX,BX
+ 00C4  8A DC		     3	      MOV BL,AH
+ 00C6  89 1E 0009 R	     3	      MOV DELTY2,BX                  
+ 00CA  33 F6		     2	    	XOR SI,SI
+ 00CC			     2	    	NEXTBARRIER:
+ 00CC  A1 0003 R	     2	    	MOV AX,DELTX1
+ 00CF  03 84 000B R	     2	    	ADD AX,POSX1[SI]
+ 00D3  89 84 000B R	     2	    	MOV POSX1[SI],AX
+ 00D7  A1 0005 R	     2	    	MOV AX,DELTY1
+ 00DA  03 84 0015 R	     2	    	ADD AX,POSY1[SI]
+ 00DE  89 84 0015 R	     2	    	MOV POSY1[SI],AX
+ 00E2  A1 0007 R	     2	    	MOV AX,DELTX2
+ 00E5  03 84 001F R	     2	    	ADD AX,POSX2[SI]
+ 00E9  89 84 001F R	     2	    	MOV POSX2[SI],AX
+ 00ED  A1 0009 R	     2	    	MOV AX,DELTY2
+ 00F0  03 84 0029 R	     2	    	ADD AX,POSY2[SI]
+ 00F4  89 84 0029 R	     2	    	MOV POSY2[SI],AX
+ 00F8  33 DB		     3	    	XOR BX,BX
+ 00FA  33 C9		     3	    	XOR CX,CX
+ 00FC  33 D2		     3	    	XOR DX,DX
+ 00FE  B4 0C		     3	    	MOV AH,0CH
+ 0100  A0 0000 R	     3	    	MOV AL,BLUE
+ 0103  8B 94 0015 R	     3	    	MOV DX,POSY1[SI]
+ 0107  8B 8C 000B R	     3	    	MOV CX,POSX1[SI]
+ 010B			     3	    	??0007:
+ 010B  8B 8C 000B R	     3	    	MOV CX,POSX1[SI]
+ 010F  CD 10		     3	    	??0008:INT 10H
+ 0111  41		     3	    	INC CX
+ 0112  3B 8C 001F R	     3	    	CMP CX,POSX2[SI]
+ 0116  72 F7		     3	    	JB ??0008
+ 0118  42		     3	   		INC DX
+ 0119  3B 94 0029 R	     3	    	CMP DX,POSY2[SI]
+ 011D  72 EC		     3	    	JB ??0007
+ 011F  46		     2	    	INC SI
+ 0120  46		     2	    	INC SI
+ 0121  83 FE 0A		     2	    	CMP SI,10
+ 0124  72 A6		     2	    	JB NEXTBARRIER 
+				       
+ 0126  B4 01			    MOV AH,1
+ 0128  CD 21			    INT 21H
+ 012A  B4 4C			    MOV AH,4CH
+ 012C  CD 21			    INT 21H
+ 012E				CODES ENDS
+				    END START
+
+
+
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 14:39:46
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+COLORSHOW  . . . . . . . . . . .	Proc
+DRAWLEVEL3 . . . . . . . . . . .	Proc
+DRAWRECT . . . . . . . . . . . .	Proc
+LOADBARRIER  . . . . . . . . . .	Proc
+RANNUM . . . . . . . . . . . . .	Proc
+WORDSHOW . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 012E	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0035	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+??0000 . . . . . . . . . . . . .	L Near	 001C	  CODES	
+??0001 . . . . . . . . . . . . .	L Near	 001F	  CODES	
+??0002 . . . . . . . . . . . . .	L Near	 003F	  CODES	
+??0003 . . . . . . . . . . . . .	L Near	 0042	  CODES	
+??0004 . . . . . . . . . . . . .	L Near	 0063	  CODES	
+??0005 . . . . . . . . . . . . .	L Near	 0066	  CODES	
+??0007 . . . . . . . . . . . . .	L Near	 010B	  CODES	
+??0008 . . . . . . . . . . . . .	L Near	 010F	  CODES	
+BLUE . . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+DELTX1 . . . . . . . . . . . . .	Word	 0003	  DATAS	
+DELTX2 . . . . . . . . . . . . .	Word	 0007	  DATAS	
+DELTY1 . . . . . . . . . . . . .	Word	 0005	  DATAS	
+DELTY2 . . . . . . . . . . . . .	Word	 0009	  DATAS	
+NEXTBARRIER  . . . . . . . . . .	L Near	 00CC	  CODES	
+POSX1  . . . . . . . . . . . . .	Word	 000B	  DATAS	
+POSX2  . . . . . . . . . . . . .	Word	 001F	  DATAS	
+POSY1  . . . . . . . . . . . . .	Word	 0015	  DATAS	
+POSY2  . . . . . . . . . . . . .	Word	 0029	  DATAS	
+RED  . . . . . . . . . . . . . .	Byte	 0001	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+TEMP . . . . . . . . . . . . . .	Word	 0033	  DATAS	
+WHITE  . . . . . . . . . . . . .	Byte	 0002	  DATAS	
+
+	   0 Warnings
+	   0 Errors

@@ -1,0 +1,119 @@
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 09:17:35
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				data            segment
+
+ 0000 44 3A 5C 48 42 5C		file             db    'D:\HB\TEST\LEVEL.TXT' , 0       ;文件名
+       54 45 53 54 5C 4C
+       45 56 45 4C 2E 54
+       58 54 00
+
+ 0015  0100 [			buf             db   256 dup(0)        ;文件内容暂存区
+        00
+       ]
+
+ 0115 0A 65 72 72 6F 72		error_message    db   0ah , 'error !' , '$'    ;出错时的提示
+       20 21 24
+
+ 011E 0000			handle           dw  ?                ;保存文件号
+
+ 0120				data             ends
+
+ 0000				code            segment
+
+				                assume  cs:code  , ds:data
+
+ 0000				start:
+
+ 0000  B8 ---- R		              mov ax , data
+
+ 0003  8E D8			              mov ds , ax
+
+ 0005  BA 0000 R		              mov dx , offset file
+
+ 0008  B0 00			              mov al , 0
+
+ 000A  B4 3D			              mov ah , 3dh
+
+ 000C  CD 21			              int 21h                  ;打开文件
+
+ 000E  72 29			              jc error                  ;若打开出错，转error
+
+ 0010  A3 011E R		              mov handle , ax           ;保存文件号
+
+ 0013  8B D8			              mov bx , ax
+
+ 0015  B9 00FF			              mov cx , 255
+
+ 0018  BA 0015 R		              mov dx , offset buf
+
+ 001B  B4 3F			              mov ah , 3fh
+
+ 001D  CD 21			              int 21h                  ;从文件中读255字节→buf
+
+ 001F  72 18			              jc error                  ;若读出错，转error
+
+ 0021  8B D8			              mov bx , ax              ;实际读到的字符数送入bx
+
+ 0023  C6 87 0015 R 24		              mov buf[bx] , '$'          ;在文件结束处放置一“$”符
+
+ 0028  BA 0015 R		              mov dx , offset buf
+
+ 002B  B4 09			              mov ah , 9
+
+ 002D  CD 21			              int 21h                            ;显示文件内容
+
+ 002F  8B 1E 011E R		              mov bx , handle
+
+ 0033  B4 3E			              mov ah , 3eh
+
+ 0035  CD 21			              int 21h                            ;关闭文件
+
+ 0037  73 07			              jnc end1             ;若关闭过程无错，转到end1处返回dos
+
+ 0039				error:
+
+ 0039  BA 0115 R		              mov dx , offset error_message
+
+ 003C  B4 09			              mov ah , 9
+
+ 003E  CD 21			              int 21h                            ;显示错误提示
+
+ 0040				end1:
+
+ 0040  B4 4C			             mov ah , 4ch
+
+ 0042  CD 21			             int 21h
+
+ 0044				code   ends
+
+				             end  start
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 09:17:35
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+code . . . . . . . . . . . . . .	16 Bit	 0044	  Para	  Private 
+data . . . . . . . . . . . . . .	16 Bit	 0120	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+buf  . . . . . . . . . . . . . .	Byte	 0015	  data	
+end1 . . . . . . . . . . . . . .	L Near	 0040	  code	
+error_message  . . . . . . . . .	Byte	 0115	  data	
+error  . . . . . . . . . . . . .	L Near	 0039	  code	
+file . . . . . . . . . . . . . .	Byte	 0000	  data	
+handle . . . . . . . . . . . . .	Word	 011E	  data	
+start  . . . . . . . . . . . . .	L Near	 0000	  code	
+
+	   0 Warnings
+	   0 Errors

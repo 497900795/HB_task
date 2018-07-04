@@ -1,29 +1,33 @@
 DATAS SEGMENT
     ;此处输入数据段代码
-    FILETEXT DB 'LEVEL.txt',00H
+    FILETEXT DB 'L.TXT',00H
     LEVELNUM1 DB '1',00H
-    HANDLE DW ? 
+    HANDLE DW ?
+    ERROR DB 'WRONG$' 
 DATAS ENDS
 
 STACKS SEGMENT
     ;此处输入堆栈段代码
+    BUF DW 20h DUP(?)
+	STTOP LABEL WORD
 STACKS ENDS
 
 CODES SEGMENT
     ASSUME CS:CODES,DS:DATAS,SS:STACKS
 START:
-    MOV AX,DATAS
-    MOV DS,AX
-    ;此处输入代码段代码
-    
-    MOV AH,3DH
-    MOV CX,0
-    LEA DX,FILETEXT
-    MOV AL,1
-    INT 21H
-    MOV HANDLE,AX
-    
-  
+	MOV AX, DATAS
+	MOV DS, AX
+	
+	MOV AX, STACKS
+	MOV SS, AX
+	LEA SP, STTOP
+	
+	MOV AH, 3DH
+	MOV AL, 0
+	LEA DX, FILETEXT
+	INT 21H
+    JC ERR
+  	
     
     MOV AH,40H
     MOV BX,HANDLE
@@ -37,7 +41,23 @@ START:
     MOV BX,HANDLE
     INT 21H
     
+   
+  FIN: 
     MOV AH,4CH
     INT 21H
+    
+    ERR:
+    MOV AH,9
+    LEA DX,ERROR
+    INT 21H
+    JMP FIN
 CODES ENDS
     END START
+
+
+
+
+
+
+
+

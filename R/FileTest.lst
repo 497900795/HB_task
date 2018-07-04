@@ -1,0 +1,108 @@
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 09:58:01
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATA SEGMENT
+ 0000 31 2E 74 78 74 00			FILEP DB '1.txt', 0
+ 0006 46 69 6C 65 20 45			ERRS DB 'File Error', '$'
+       72 72 6F 72 24
+ 0011 48 41 48 41 48 24			SUSS DB 'HAHAH', '$'
+ 0017  0100 [				READBUF DB 256 DUP('0')
+        30
+       ]
+ 0117 0000				HANDLE DW ?
+ 0119				DATA ENDS
+
+ 0000				STACK SEGMENT
+ 0000  0020 [				BUF DW 20h DUP(?)
+        0000
+       ]
+ 0040					STTOP LABEL WORD
+ 0040				STACK ENDS
+
+ 0000				CODE SEGMENT
+					ASSUME CS:CODE, DS:DATA, SS:STACK
+ 0000				START:
+ 0000  B8 ---- R			MOV AX, DATA
+ 0003  8E D8				MOV DS, AX
+					
+ 0005  B8 ---- R			MOV AX, STACK
+ 0008  8E D0				MOV SS, AX
+ 000A  8D 26 0040 R			LEA SP, STTOP
+					
+ 000E  B4 3D				MOV AH, 3DH
+ 0010  B0 00				MOV AL, 0
+ 0012  8D 16 0000 R			LEA DX, FILEP
+ 0016  CD 21				INT 21H
+					
+ 0018  72 2F				JC ERR
+					
+ 001A  8B D8				MOV BX, AX
+ 001C  89 1E 0117 R			MOV HANDLE, BX
+ 0020  B4 3F				MOV AH, 3FH
+ 0022  8D 16 0017 R			LEA DX, READBUF
+ 0026  B9 0100				MOV CX, 256
+ 0029  CD 21				INT 21H
+					
+ 002B  8B D8				MOV BX, AX
+ 002D  B5 24				MOV CH, '$'
+ 002F  88 AF 0017 R			MOV READBUF[BX], CH
+ 0033  8B 1E 0117 R			MOV BX, HANDLE
+					
+ 0037  B4 3E				MOV AH, 3EH
+ 0039  CD 21				INT 21H
+					
+ 003B  B4 09				MOV AH, 09H
+ 003D  8D 16 0017 R			LEA DX, READBUF
+ 0041  CD 21				INT 21H
+ 0043  B4 09				MOV AH, 09H
+ 0045  CD 21				INT 21H
+ 0047  EB 08				JMP EXIT
+					
+ 0049				ERR:
+ 0049  B4 09				MOV AH, 09H
+ 004B  8D 16 0006 R			LEA DX, ERRS
+ 004F  CD 21				INT 21H
+					
+ 0051				EXIT:
+ 0051  B4 01				MOV AH,1
+ 0053  CD 21				INT 21H
+ 0055  B8 4C00				MOV AX, 4C00H
+ 0058  CD 21				INT 21H
+ 005A				CODE ENDS
+					END START
+
+					
+
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 09:58:01
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODE . . . . . . . . . . . . . .	16 Bit	 005A	  Para	  Private 
+DATA . . . . . . . . . . . . . .	16 Bit	 0119	  Para	  Private 
+STACK  . . . . . . . . . . . . .	16 Bit	 0040	  Para	  Private 
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+BUF  . . . . . . . . . . . . . .	Word	 0000	  STACK	
+ERRS . . . . . . . . . . . . . .	Byte	 0006	  DATA	
+ERR  . . . . . . . . . . . . . .	L Near	 0049	  CODE	
+EXIT . . . . . . . . . . . . . .	L Near	 0051	  CODE	
+FILEP  . . . . . . . . . . . . .	Byte	 0000	  DATA	
+HANDLE . . . . . . . . . . . . .	Word	 0117	  DATA	
+READBUF  . . . . . . . . . . . .	Byte	 0017	  DATA	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODE	
+STTOP  . . . . . . . . . . . . .	Word	 0040	  STACK	
+SUSS . . . . . . . . . . . . . .	Byte	 0011	  DATA	
+
+	   0 Warnings
+	   0 Errors

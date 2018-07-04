@@ -1,53 +1,73 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/03/18 17:27:39
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 10:02:18
 tempfile.asm						     Page 1 - 1
 
 
  0000				DATAS SEGMENT
 				    ;此处输入数据段代码
- 0000 4C 45 56 45 4C 2E		    FILETEXT DB 'LEVEL.txt',00H
-       74 78 74 00
- 000A 31 00			    LEVELNUM1 DB '1',00H
- 000C 0000			    HANDLE DW ? 
- 000E				DATAS ENDS
+ 0000 4C 2E 54 58 54 00		    FILETEXT DB 'L.TXT',00H
+ 0006 31 00			    LEVELNUM1 DB '1',00H
+ 0008 0000			    HANDLE DW ?
+ 000A 57 52 4F 4E 47 24		    ERROR DB 'WRONG$' 
+ 0010				DATAS ENDS
 
  0000				STACKS SEGMENT
 				    ;此处输入堆栈段代码
- 0000				STACKS ENDS
+ 0000  0020 [			    BUF DW 20h DUP(?)
+        0000
+       ]
+ 0040					STTOP LABEL WORD
+ 0040				STACKS ENDS
 
  0000				CODES SEGMENT
 				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
  0000				START:
- 0000  B8 ---- R		    MOV AX,DATAS
- 0003  8E D8			    MOV DS,AX
-				    ;此处输入代码段代码
+ 0000  B8 ---- R			MOV AX, DATAS
+ 0003  8E D8				MOV DS, AX
+					
+ 0005  B8 ---- R			MOV AX, STACKS
+ 0008  8E D0				MOV SS, AX
+ 000A  8D 26 0040 R			LEA SP, STTOP
+					
+ 000E  B4 3D				MOV AH, 3DH
+ 0010  B0 00				MOV AL, 0
+ 0012  8D 16 0000 R			LEA DX, FILETEXT
+ 0016  CD 21				INT 21H
+ 0018  72 1B			    JC ERR
+				  	
 				    
- 0005  B4 3D			    MOV AH,3DH
- 0007  B9 0000			    MOV CX,0
- 000A  8D 16 0000 R		    LEA DX,FILETEXT
- 000E  B0 01			    MOV AL,1
- 0010  CD 21			    INT 21H
- 0012  A3 000C R		    MOV HANDLE,AX
-				    
-				  
-				    
- 0015  B4 40			    MOV AH,40H
- 0017  8B 1E 000C R		    MOV BX,HANDLE
- 001B  8D 16 000A R		    LEA DX,LEVELNUM1
- 001F  B9 0001			    MOV CX,1
- 0022  CD 21			    INT 21H
+ 001A  B4 40			    MOV AH,40H
+ 001C  8B 1E 0008 R		    MOV BX,HANDLE
+ 0020  8D 16 0006 R		    LEA DX,LEVELNUM1
+ 0024  B9 0001			    MOV CX,1
+ 0027  CD 21			    INT 21H
 				    
 				   
 				    
- 0024  B4 3E			    MOV AH,3EH
- 0026  8B 1E 000C R		    MOV BX,HANDLE
- 002A  CD 21			    INT 21H
+ 0029  B4 3E			    MOV AH,3EH
+ 002B  8B 1E 0008 R		    MOV BX,HANDLE
+ 002F  CD 21			    INT 21H
 				    
- 002C  B4 4C			    MOV AH,4CH
- 002E  CD 21			    INT 21H
- 0030				CODES ENDS
+				   
+ 0031				  FIN: 
+ 0031  B4 4C			    MOV AH,4CH
+ 0033  CD 21			    INT 21H
+				    
+ 0035				    ERR:
+ 0035  B4 09			    MOV AH,9
+ 0037  8D 16 000A R		    LEA DX,ERROR
+ 003B  CD 21			    INT 21H
+ 003D  EB F2			    JMP FIN
+ 003F				CODES ENDS
 				    END START
 
-Microsoft (R) Macro Assembler Version 6.11		    07/03/18 17:27:39
+
+
+
+
+
+
+
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 10:02:18
 tempfile.asm						     Symbols 2 - 1
 
 
@@ -57,19 +77,24 @@ Segments and Groups:
 
                 N a m e                 Size     Length   Align   Combine Class
 
-CODES  . . . . . . . . . . . . .	16 Bit	 0030	  Para	  Private 
-DATAS  . . . . . . . . . . . . .	16 Bit	 000E	  Para	  Private 
-STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+CODES  . . . . . . . . . . . . .	16 Bit	 003F	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 0010	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0040	  Para	  Private 
 
 
 Symbols:
 
                 N a m e                 Type     Value    Attr
 
+BUF  . . . . . . . . . . . . . .	Word	 0000	  STACKS	
+ERROR  . . . . . . . . . . . . .	Byte	 000A	  DATAS	
+ERR  . . . . . . . . . . . . . .	L Near	 0035	  CODES	
 FILETEXT . . . . . . . . . . . .	Byte	 0000	  DATAS	
-HANDLE . . . . . . . . . . . . .	Word	 000C	  DATAS	
-LEVELNUM1  . . . . . . . . . . .	Byte	 000A	  DATAS	
+FIN  . . . . . . . . . . . . . .	L Near	 0031	  CODES	
+HANDLE . . . . . . . . . . . . .	Word	 0008	  DATAS	
+LEVELNUM1  . . . . . . . . . . .	Byte	 0006	  DATAS	
 START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+STTOP  . . . . . . . . . . . . .	Word	 0040	  STACKS	
 
 	   0 Warnings
 	   0 Errors
