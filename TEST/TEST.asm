@@ -1,11 +1,14 @@
 DATAS SEGMENT
     ;此处输入数据段代码
+    ;开始界面信息
      NGAME DB '1.NEW GAME$'
      LGAME DB '2.LOAD GAME$'
      EGAME DB '3.EXIT$'
+     ;颜色变量
      BLUE DB 0BH
 	 RED DB 0CH
-	 WHITE DB 0FH 
+	 WHITE DB 0FH
+	 BLACK DB 0 
      ;第三关生成随机数用
      DELTX1 DW ?
      DELTY1 DW ?
@@ -14,7 +17,12 @@ DATAS SEGMENT
      POSX1 DW 80,220,300,440,520
      POSY1 DW 110,150,180,140,155
      POSX2 DW 100,245,325,460,550
-     POSY2 DW 130,170,195,160,165  
+     POSY2 DW 130,170,195,160,165
+     ;玩家位置控制,第1,2关
+     PLYX1 DW 95
+     PLYY1 DW 85
+     PLYX2 DW 115
+     PLYY2 DW 105  
 DATAS ENDS
 
 STACKS SEGMENT
@@ -55,7 +63,7 @@ START:
 	    LDRGI
     ENDM
     
-	WIRTESTARTOPTION MACRO STR,RW	
+	WRITESTARTOPTION MACRO STR,RW	
 		MOV BH,0
 		MOV DH,RW
 		MOV DL,28
@@ -68,9 +76,9 @@ START:
 	;画开始页面
 	DRAWSTART MACRO
 		SVRGI
-		WIRTESTARTOPTION NGAME,8
-	   	WIRTESTARTOPTION LGAME,11
-	   	WIRTESTARTOPTION EGAME,14
+		WRITESTARTOPTION NGAME,8
+	   	WRITESTARTOPTION LGAME,11
+	   	WRITESTARTOPTION EGAME,14
 	   	LDRGI
 	   	MOV AH,8
 	   	INT 21H
@@ -149,7 +157,7 @@ START:
     
     
      ;绘制矩形,来拼出场景
-    ;参数分别为第一个点的坐标,第二个点的坐标,颜色
+     ;参数分别为第一个点的坐标,第二个点的坐标,颜色
      DRAWRECT MACRO X1,Y1,X2,Y2,COLOR
     	LOCAL ROW,COL
     	XOR BX,BX
@@ -290,31 +298,237 @@ START:
         LOADBARRIER
     ENDM
     
-	
+      ;玩家移动,小写wasd控制 
+    PLYMOVE MACRO X1,Y1,X2,Y2
+        LOCAL MUP,MDOWN,MLEFT,MRIGHT,FINSTEP
+        MOV AH,7
+        INT 21H
+        PUSH AX     
+        DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,BLACK
+        POP AX
+        CMP AL,'w'
+        JZ MUP
+        CMP AL,'a'
+        JZ MLEFT
+        CMP AL,'s'
+        JZ MDOWN
+        CMP AL,'d'
+        JZ MRIGHT
+        JMP FINSTEP
+        ;上
+        MUP:
+        MOVEUP Y1,Y2
+        JMP FINSTEP
+        ;下
+        MDOWN:
+        MOVEDOWN Y1,Y2
+        JMP FINSTEP
+        ;左
+        MLEFT:
+        MOVELEFT X1,X2
+        JMP FINSTEP
+        ;右
+        MRIGHT:
+        MOVERIGHT X1,X2
+        JMP FINSTEP
+        ;移动结束,重新画图
+        FINSTEP:
+        DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
+    ENDM
+    
+    MOVEUP MACRO Y1,Y2
+        MOV CX,Y1
+        MOV DX,Y2
+        SUB CX,5
+        SUB DX,5
+        MOV Y1,CX
+        MOV Y2,DX
+    ENDM
+    
+    MOVEDOWN MACRO Y1,Y2
+        MOV CX,Y1
+        MOV DX,Y2
+        ADD CX,5
+        ADD DX,5
+        MOV Y1,CX
+        MOV Y2,DX
+    ENDM
+    
+    MOVELEFT MACRO X1,X2
+        MOV CX,X1
+        MOV DX,X2
+        SUB CX,5
+        SUB DX,5
+        MOV X1,CX
+        MOV X2,DX
+    ENDM
+    
+    MOVERIGHT MACRO X1,X2
+        MOV CX,X1
+        MOV DX,X2
+        ADD CX,5
+        ADD DX,5
+        MOV X1,CX
+        MOV X2,DX
+    ENDM
+    
+     JUDGE MACRO X,Y
+        LOCAL FINJUD
+        MOV CX,X
+        MOV DX,Y
+        XOR BX,BX
+        
+        ;POINT1
+        MOV AH,0DH
+        INT 10H
+        CMP AL,BLUE
+        JZ FINJUD
+        CMP AL,RED
+        JZ FINJUD
+            
+        ;POINT2
+        PUSH CX
+        ADD CX,20
+        MOV AH,0DH
+        INT 10H
+        CMP AL,BLUE
+        JZ FINJUD
+        CMP AL,RED
+        JZ FINJUD
+        POP CX
+        
+        ;POINT3
+        PUSH CX
+        PUSH DX
+        ADC CX,20
+        ADC DX,20
+        MOV AH,0DH
+        INT 10H
+        CMP AL,BLUE
+        JZ FINJUD
+        CMP AL,RED
+        JZ FINJUD
+        POP DX
+        POP CX
+        
+        ;POINT4
+        PUSH DX
+        ADC DX,20
+        MOV AH,0DH
+        INT 10H
+        CMP AL,BLUE
+        JZ FINJUD
+        CMP AL,RED
+        JZ FINJUD
+        POP DX
+        
+        FINJUD:
+    ENDM
+    
+    ;第一关初始化方块
+    SETPOSL1 MACRO
+    	MOV AX,95
+    	MOV PLYX1,AX
+    	MOV AX,85
+    	MOV PLYY1,AX
+    	MOV AX,115
+    	MOV PLYX2,AX
+    	MOV AX,105
+    	MOV PLYY2,AX
+    ENDM 
+    
+    ;第二关初始化方块
+    SETPOSL2 MACRO
+    	MOV AX,95
+    	MOV PLYX1,AX
+    	MOV AX,85
+    	MOV PLYY1,AX
+    	MOV AX,115
+    	MOV PLYX2,AX
+    	MOV AX,105
+    	MOV PLYY2,AX
+    ENDM
+    
+     ;第三关初始化方块
+    SETPOSL3 MACRO
+    	MOV AX,80
+    	MOV PLYX1,AX
+    	MOV AX,160
+    	MOV PLYY1,AX
+    	MOV AX,100
+    	MOV PLYX2,AX
+    	MOV AX,180
+    	MOV PLYY2,AX
+    ENDM
+    
 	;对宏的调用
+	;开始界面
 	DRAWBORDER
 	DRAWSTART
-	
-	MOV AH,1
+	;选项1,新游戏
+	MOV AH,7
 	INT 21H
 	CMP AL,'1'
 	JZ STARTGAME
 	
 	STARTGAME:
 	COLORSHOW
+	;第一关
+	PLAYLEVEL1:
+	CLEAN
+	SETPOSL1
+	DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE	
 	DRAWLEVEL1
-    MOV AH,1
-    INT 21H
-    CLEAN
-    DRAWLEVEL2
-   
+	NEXTSTEP_L1:
+	JUDGE PLYX1,PLYY1
+	CMP AL,BLUE
+	JZ DEAD
+	CMP AL,RED
+	JZ PLAYLEVEL2
+    ;不死则移动
+    PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
+    JMP NEXTSTEP_L1
 	
+    PLAYLEVEL2:
+    CLEAN
+    SETPOSL2;方块位置放到第二关开始位置
+    DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE	
+    DRAWLEVEL2
+    NEXTSTEP_L2:
+	JUDGE PLYX1,PLYY1
+	CMP AL,BLUE
+	JZ DEAD
+	CMP AL,RED
+	JZ PLAYLEVEL3
+    ;不死则移动
+    PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
+    JMP NEXTSTEP_L2
+    
+    PLAYLEVEL3:
+    CLEAN
+    SETPOSL3
+    DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE	
+    DRAWLEVEL3
+    NEXTSTEP_L3:
+	JUDGE PLYX1,PLYY1
+	CMP AL,BLUE
+	JZ DEAD
+	CMP AL,RED
+	JZ DEAD
+    ;不死则移动
+    PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
+    JMP NEXTSTEP_L3
+    
+	DEAD:
 	
 	
     MOV AH,4CH
     INT 21H
 CODES ENDS
     END START
+
+
+
 
 
 

@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 16:44:33
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 18:39:51
 tempfile.asm						     Page 1 - 1
 
 
@@ -224,9 +224,9 @@ tempfile.asm						     Page 1 - 1
 				   
  0056				    NEXTSTEP:
 				    ;读像素判断
-				    ;入口参数为左上定点的坐标,出口是结果
-				    ;死亡1
-				    ;胜利2
+				    ;入口参数为左上定点的坐标,出口是某个点读到的死亡颜色或者胜利颜色
+				    ;死亡 BLUE
+				    ;胜利 RED
 					JUDGE PLYX1,PLYY1
  0056  8B 0E 0004 R	     1	    	MOV CX,PLYX1
  005A  8B 16 0006 R	     1	    	MOV DX,PLYY1
@@ -359,7 +359,8 @@ tempfile.asm						     Page 1 - 1
 				    END START
 
 
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 16:44:33
+
+Microsoft (R) Macro Assembler Version 6.11		    07/04/18 18:39:51
 tempfile.asm						     Symbols 2 - 1
 
 

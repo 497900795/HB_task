@@ -24,8 +24,8 @@
 
 
 DATAS SEGMENT
-    ;此处输入数据段代码
-     BLUE DB 0BH
+   ;此处输入数据段代码
+   BLUE DB 0BH
 	 RED DB 0CH
 	 WHITE DB 0FH
 	 ;第三关生成随机数用
@@ -173,13 +173,14 @@ START:
    	
    	COLORSHOW
    	DRAWLEVEL3
-       
+      
     MOV AH,1
     INT 21H
     MOV AH,4CH
     INT 21H
 CODES ENDS
     END START
+
 
 
 
