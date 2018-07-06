@@ -1,10 +1,10 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 10:02:18
+Microsoft (R) Macro Assembler Version 6.11		    07/05/18 18:00:02
 tempfile.asm						     Page 1 - 1
 
 
  0000				DATAS SEGMENT
 				    ;此处输入数据段代码
- 0000 4C 2E 54 58 54 00		    FILETEXT DB 'L.TXT',00H
+ 0000 4C 2E 74 78 74 00		    FILETEXT DB 'L.txt',00H
  0006 31 00			    LEVELNUM1 DB '1',00H
  0008 0000			    HANDLE DW ?
  000A 57 52 4F 4E 47 24		    ERROR DB 'WRONG$' 
@@ -32,32 +32,33 @@ tempfile.asm						     Page 1 - 1
  0010  B0 00				MOV AL, 0
  0012  8D 16 0000 R			LEA DX, FILETEXT
  0016  CD 21				INT 21H
- 0018  72 1B			    JC ERR
+ 0018  A3 0008 R			mov HANDLE,ax
+ 001B  72 1B			    JC ERR
 				  	
 				    
- 001A  B4 40			    MOV AH,40H
- 001C  8B 1E 0008 R		    MOV BX,HANDLE
- 0020  8D 16 0006 R		    LEA DX,LEVELNUM1
- 0024  B9 0001			    MOV CX,1
- 0027  CD 21			    INT 21H
+ 001D  B4 40			    MOV AH,40H
+ 001F  8B 1E 0008 R		    MOV BX,HANDLE
+ 0023  8D 16 0006 R		    LEA DX,LEVELNUM1
+ 0027  B9 0001			    MOV CX,1
+ 002A  CD 21			    INT 21H
 				    
 				   
 				    
- 0029  B4 3E			    MOV AH,3EH
- 002B  8B 1E 0008 R		    MOV BX,HANDLE
- 002F  CD 21			    INT 21H
+ 002C  B4 3E			    MOV AH,3EH
+ 002E  8B 1E 0008 R		    MOV BX,HANDLE
+ 0032  CD 21			    INT 21H
 				    
 				   
- 0031				  FIN: 
- 0031  B4 4C			    MOV AH,4CH
- 0033  CD 21			    INT 21H
+ 0034				  FIN: 
+ 0034  B4 4C			    MOV AH,4CH
+ 0036  CD 21			    INT 21H
 				    
- 0035				    ERR:
- 0035  B4 09			    MOV AH,9
- 0037  8D 16 000A R		    LEA DX,ERROR
- 003B  CD 21			    INT 21H
- 003D  EB F2			    JMP FIN
- 003F				CODES ENDS
+ 0038				    ERR:
+ 0038  B4 09			    MOV AH,9
+ 003A  8D 16 000A R		    LEA DX,ERROR
+ 003E  CD 21			    INT 21H
+ 0040  EB F2			    JMP FIN
+ 0042				CODES ENDS
 				    END START
 
 
@@ -67,7 +68,8 @@ tempfile.asm						     Page 1 - 1
 
 
 
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 10:02:18
+
+Microsoft (R) Macro Assembler Version 6.11		    07/05/18 18:00:02
 tempfile.asm						     Symbols 2 - 1
 
 
@@ -77,7 +79,7 @@ Segments and Groups:
 
                 N a m e                 Size     Length   Align   Combine Class
 
-CODES  . . . . . . . . . . . . .	16 Bit	 003F	  Para	  Private 
+CODES  . . . . . . . . . . . . .	16 Bit	 0042	  Para	  Private 
 DATAS  . . . . . . . . . . . . .	16 Bit	 0010	  Para	  Private 
 STACKS . . . . . . . . . . . . .	16 Bit	 0040	  Para	  Private 
 
@@ -88,9 +90,9 @@ Symbols:
 
 BUF  . . . . . . . . . . . . . .	Word	 0000	  STACKS	
 ERROR  . . . . . . . . . . . . .	Byte	 000A	  DATAS	
-ERR  . . . . . . . . . . . . . .	L Near	 0035	  CODES	
+ERR  . . . . . . . . . . . . . .	L Near	 0038	  CODES	
 FILETEXT . . . . . . . . . . . .	Byte	 0000	  DATAS	
-FIN  . . . . . . . . . . . . . .	L Near	 0031	  CODES	
+FIN  . . . . . . . . . . . . . .	L Near	 0034	  CODES	
 HANDLE . . . . . . . . . . . . .	Word	 0008	  DATAS	
 LEVELNUM1  . . . . . . . . . . .	Byte	 0006	  DATAS	
 START  . . . . . . . . . . . . .	L Near	 0000	  CODES	

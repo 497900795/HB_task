@@ -1,6 +1,6 @@
 DATAS SEGMENT
     ;此处输入数据段代码
-    FILETEXT DB 'L.TXT',00H
+    FILETEXT DB 'L.txt',00H
     LEVELNUM1 DB '1',00H
     HANDLE DW ?
     ERROR DB 'WRONG$' 
@@ -23,9 +23,10 @@ START:
 	LEA SP, STTOP
 	
 	MOV AH, 3DH
-	MOV AL, 0
+	MOV AL, 1
 	LEA DX, FILETEXT
 	INT 21H
+	mov HANDLE,ax
     JC ERR
   	
     
@@ -53,6 +54,8 @@ START:
     JMP FIN
 CODES ENDS
     END START
+
+
 
 
 
