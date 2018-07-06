@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/05/18 18:00:02
+Microsoft (R) Macro Assembler Version 6.11		    07/06/18 15:34:04
 tempfile.asm						     Page 1 - 1
 
 
@@ -29,7 +29,7 @@ tempfile.asm						     Page 1 - 1
  000A  8D 26 0040 R			LEA SP, STTOP
 					
  000E  B4 3D				MOV AH, 3DH
- 0010  B0 00				MOV AL, 0
+ 0010  B0 01				MOV AL, 1
  0012  8D 16 0000 R			LEA DX, FILETEXT
  0016  CD 21				INT 21H
  0018  A3 0008 R			mov HANDLE,ax
@@ -69,7 +69,9 @@ tempfile.asm						     Page 1 - 1
 
 
 
-Microsoft (R) Macro Assembler Version 6.11		    07/05/18 18:00:02
+
+
+Microsoft (R) Macro Assembler Version 6.11		    07/06/18 15:34:04
 tempfile.asm						     Symbols 2 - 1
 
 

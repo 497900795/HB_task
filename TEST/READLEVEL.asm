@@ -1,81 +1,51 @@
-data            segment
+DATAS SEGMENT
+    ;此处输入数据段代码
+    FILENAME DB 'L.TXT',0
+    BUF DB ?
+    STT DB 'OK$'
+DATAS ENDS
 
-file             db    'D:\HB\TEST\LEVEL.TXT' , 0       ;文件名
+STACKS SEGMENT
+    ;此处输入堆栈段代码
+STACKS ENDS
 
-buf             db   256 dup(0)        ;文件内容暂存区
-
-error_message    db   0ah , 'error !' , '$'    ;出错时的提示
-
-handle           dw  ?                ;保存文件号
-
-data             ends
-
-code            segment
-
-                assume  cs:code  , ds:data
-
-start:
-
-              mov ax , data
-
-              mov ds , ax
-
-              mov dx , offset file
-
-              mov al , 0
-
-              mov ah , 3dh
-
-              int 21h                  ;打开文件
-
-              jc error                  ;若打开出错，转error
-
-              mov handle , ax           ;保存文件号
-
-              mov bx , ax
-
-              mov cx , 255
-
-              mov dx , offset buf
-
-              mov ah , 3fh
-
-              int 21h                  ;从文件中读255字节→buf
-
-              jc error                  ;若读出错，转error
-
-              mov bx , ax              ;实际读到的字符数送入bx
-
-              mov buf[bx] , '$'          ;在文件结束处放置一“$”符
-
-              mov dx , offset buf
-
-              mov ah , 9
-
-              int 21h                            ;显示文件内容
-
-              mov bx , handle
-
-              mov ah , 3eh
-
-              int 21h                            ;关闭文件
-
-              jnc end1             ;若关闭过程无错，转到end1处返回dos
-
-error:
-
-              mov dx , offset error_message
-
-              mov ah , 9
-
-              int 21h                            ;显示错误提示
-
-end1:
-
-             mov ah , 4ch
-
-             int 21h
-
-code   ends
-
-             end  start
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    ;此处输入代码段代码
+    
+    LEA DX,FILENAME
+    MOV AL,0
+    MOV CX,0
+    MOV AH,3CH
+    INT 21H
+    
+    LEA DX,BUF
+    MOV BX,AX
+    MOV CX,1
+    MOV AH,3FH
+    INT 21H
+    
+    CMP DX,'5'
+    JZ OKK
+    
+    FIN:
+    MOV AH,3EH
+    INT 21H
+    
+    MOV AH,1
+    INT 21H
+    
+    MOV AH,4CH
+    INT 21H
+    
+    OKK:
+	LEA DX,STT
+    MOV AH,9
+    INT 21H
+    JMP FIN
+    
+CODES ENDS
+    END START

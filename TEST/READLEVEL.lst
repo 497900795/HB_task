@@ -1,95 +1,59 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 09:17:35
+Microsoft (R) Macro Assembler Version 6.11		    07/06/18 16:11:30
 tempfile.asm						     Page 1 - 1
 
 
- 0000				data            segment
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码
+ 0000 4C 2E 54 58 54 00		    FILENAME DB 'L.TXT',0
+ 0006 00			    BUF DB ?
+ 0007 4F 4B 24			    STT DB 'OK$'
+ 000A				DATAS ENDS
 
- 0000 44 3A 5C 48 42 5C		file             db    'D:\HB\TEST\LEVEL.TXT' , 0       ;文件名
-       54 45 53 54 5C 4C
-       45 56 45 4C 2E 54
-       58 54 00
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000				STACKS ENDS
 
- 0015  0100 [			buf             db   256 dup(0)        ;文件内容暂存区
-        00
-       ]
-
- 0115 0A 65 72 72 6F 72		error_message    db   0ah , 'error !' , '$'    ;出错时的提示
-       20 21 24
-
- 011E 0000			handle           dw  ?                ;保存文件号
-
- 0120				data             ends
-
- 0000				code            segment
-
-				                assume  cs:code  , ds:data
-
- 0000				start:
-
- 0000  B8 ---- R		              mov ax , data
-
- 0003  8E D8			              mov ds , ax
-
- 0005  BA 0000 R		              mov dx , offset file
-
- 0008  B0 00			              mov al , 0
-
- 000A  B4 3D			              mov ah , 3dh
-
- 000C  CD 21			              int 21h                  ;打开文件
-
- 000E  72 29			              jc error                  ;若打开出错，转error
-
- 0010  A3 011E R		              mov handle , ax           ;保存文件号
-
- 0013  8B D8			              mov bx , ax
-
- 0015  B9 00FF			              mov cx , 255
-
- 0018  BA 0015 R		              mov dx , offset buf
-
- 001B  B4 3F			              mov ah , 3fh
-
- 001D  CD 21			              int 21h                  ;从文件中读255字节→buf
-
- 001F  72 18			              jc error                  ;若读出错，转error
-
- 0021  8B D8			              mov bx , ax              ;实际读到的字符数送入bx
-
- 0023  C6 87 0015 R 24		              mov buf[bx] , '$'          ;在文件结束处放置一“$”符
-
- 0028  BA 0015 R		              mov dx , offset buf
-
- 002B  B4 09			              mov ah , 9
-
- 002D  CD 21			              int 21h                            ;显示文件内容
-
- 002F  8B 1E 011E R		              mov bx , handle
-
- 0033  B4 3E			              mov ah , 3eh
-
- 0035  CD 21			              int 21h                            ;关闭文件
-
- 0037  73 07			              jnc end1             ;若关闭过程无错，转到end1处返回dos
-
- 0039				error:
-
- 0039  BA 0115 R		              mov dx , offset error_message
-
- 003C  B4 09			              mov ah , 9
-
- 003E  CD 21			              int 21h                            ;显示错误提示
-
- 0040				end1:
-
- 0040  B4 4C			             mov ah , 4ch
-
- 0042  CD 21			             int 21h
-
- 0044				code   ends
-
-				             end  start
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 09:17:35
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    ;此处输入代码段代码
+				    
+ 0005  8D 16 0000 R		    LEA DX,FILENAME
+ 0009  B0 00			    MOV AL,0
+ 000B  B9 0000			    MOV CX,0
+ 000E  B4 3C			    MOV AH,3CH
+ 0010  CD 21			    INT 21H
+				    
+ 0012  8D 16 0006 R		    LEA DX,BUF
+ 0016  8B D8			    MOV BX,AX
+ 0018  B9 0001			    MOV CX,1
+ 001B  B4 3F			    MOV AH,3FH
+ 001D  CD 21			    INT 21H
+				    
+ 001F  83 FA 35			    CMP DX,'5'
+ 0022  74 0C			    JZ OKK
+				    
+ 0024				    FIN:
+ 0024  B4 3E			    MOV AH,3EH
+ 0026  CD 21			    INT 21H
+				    
+ 0028  B4 01			    MOV AH,1
+ 002A  CD 21			    INT 21H
+				    
+ 002C  B4 4C			    MOV AH,4CH
+ 002E  CD 21			    INT 21H
+				    
+ 0030				    OKK:
+ 0030  8D 16 0007 R			LEA DX,STT
+ 0034  B4 09			    MOV AH,9
+ 0036  CD 21			    INT 21H
+ 0038  EB EA			    JMP FIN
+				    
+ 003A				CODES ENDS
+				    END START
+Microsoft (R) Macro Assembler Version 6.11		    07/06/18 16:11:30
 tempfile.asm						     Symbols 2 - 1
 
 
@@ -99,21 +63,21 @@ Segments and Groups:
 
                 N a m e                 Size     Length   Align   Combine Class
 
-code . . . . . . . . . . . . . .	16 Bit	 0044	  Para	  Private 
-data . . . . . . . . . . . . . .	16 Bit	 0120	  Para	  Private 
+CODES  . . . . . . . . . . . . .	16 Bit	 003A	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 000A	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
 
 
 Symbols:
 
                 N a m e                 Type     Value    Attr
 
-buf  . . . . . . . . . . . . . .	Byte	 0015	  data	
-end1 . . . . . . . . . . . . . .	L Near	 0040	  code	
-error_message  . . . . . . . . .	Byte	 0115	  data	
-error  . . . . . . . . . . . . .	L Near	 0039	  code	
-file . . . . . . . . . . . . . .	Byte	 0000	  data	
-handle . . . . . . . . . . . . .	Word	 011E	  data	
-start  . . . . . . . . . . . . .	L Near	 0000	  code	
+BUF  . . . . . . . . . . . . . .	Byte	 0006	  DATAS	
+FILENAME . . . . . . . . . . . .	Byte	 0000	  DATAS	
+FIN  . . . . . . . . . . . . . .	L Near	 0024	  CODES	
+OKK  . . . . . . . . . . . . . .	L Near	 0030	  CODES	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+STT  . . . . . . . . . . . . . .	Byte	 0007	  DATAS	
 
 	   0 Warnings
 	   0 Errors

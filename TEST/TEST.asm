@@ -25,7 +25,11 @@ DATAS SEGMENT
      PLYY2 DW 105
      ;死亡场景用变量
      CONSTR DB 'P','r','e','s','s',' ','a','n','y',' ','k','e','y',' ','t','o',' ','c','o','n','t','i','n','u','e'
-	 LENCONSTR dw $-CONSTR  
+	 LENCONSTR dw $-CONSTR
+	 ;关卡读写
+	 HANDLE DW ?
+	 LEVEL DB ?,0
+	 FILENAME DB 'LEVEL.TXT'  
 DATAS ENDS
 
 STACKS SEGMENT
@@ -51,19 +55,6 @@ START:
         POP BX
         POP CX
         POP DX
-    ENDM
-    
-    ;清屏
-    CLEAN MACRO
-        SVRGI
-        MOV AL,0
-        XOR CX,CX
-        MOV DH,25
-        MOV DL,78
-        MOV BH,0
-        MOV AH,7
-        INT 10H
-        LDRGI
     ENDM
     
     WRITESTARTOPTION MACRO STR,RW   
@@ -463,13 +454,7 @@ START:
         MOV PLYY2,AX
     ENDM
     
-    ;死亡场景
- 	DRAWDEADSCENCE MACRO
-    	;图形
-    	DRAWDEADIMG
-    	;文字
-    	WRITECONWORD
-    ENDM
+    
     ;图形
     DRAWDEADIMG MACRO
     	;字母D,1号
@@ -512,12 +497,7 @@ START:
         LOOP WRITENEXT
     ENDM
     
-     DRAWVICTORYSCENCE MACRO
-    	;图形
-    	DRAWVICTORYIMG
-    	;文字
-    	WRITECONWORD
-    ENDM
+  
     
     DRAWVICTORYIMG MACRO
     	;W
@@ -537,27 +517,40 @@ START:
     	DRAWRECT 480,80,500,220,BLUE
     ENDM
     
-    ;对宏的调用
+    ;加载到特定关卡
+    LOADLEVEL MACRO
+    MOV AL,'1'
+    CMP AL,LEVEL
+    JZ PLAYLEVEL1
+    MOV AL,'2'
+    CMP AL,LEVEL
+    JZ PLAYLEVEL2
+    MOV AL,'3'
+    CMP AL,LEVEL
+    JZ PLAYLEVEL3
+    ENDM
+    ;------------------------------
     ;开始界面
     STARTPAGE:
-    WORDSHOW
-    DRAWBORDER
-    DRAWSTART
+    CALL INITSTARTPAGE
     ;选项1,新游戏
     MOV AH,7
     INT 21H
     ;1.开始游戏
     CMP AL,'1'
-    JZ STARTGAME
+    JZ PLAYLEVEL1
     ;2.继续游戏
+    CMP AL,'2'
+   	JZ LOADGAEM
     ;3.退出游戏
     CMP AL,'3'
-    JZ EXITGAME
+    JZ EXITGAME   
     
-    STARTGAME:
-    COLORSHOW
     ;第一关
     PLAYLEVEL1:
+    MOV AL,'1'
+    MOV LEVEL,AL
+    CALL WRITEFILE
    	CALL INITLEVEL1
     NEXTSTEP_L1:
     JUDGE PLYX1,PLYY1
@@ -567,10 +560,12 @@ START:
     JZ PLAYLEVEL2
     ;不死则移动
     CALL PLYOPERATE
-    JMP NEXTSTEP_L1
-    
+    JMP NEXTSTEP_L1    
     ;第二关
     PLAYLEVEL2:
+    MOV AL,'2'
+    MOV LEVEL,AL
+    CALL WRITEFILE
    	CALL INITLEVEL2
     NEXTSTEP_L2:
     JUDGE PLYX1,PLYY1
@@ -580,10 +575,12 @@ START:
     JZ PLAYLEVEL3
     ;不死则移动
     PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
-    JMP NEXTSTEP_L2
-    
+    JMP NEXTSTEP_L2    
     ;第三关
     PLAYLEVEL3:
+    MOV AL,'3'
+    MOV LEVEL,AL
+    CALL WRITEFILE
    	CALL INITLEVEL3
     NEXTSTEP_L3:
     JUDGE PLYX1,PLYY1
@@ -593,40 +590,50 @@ START:
     JZ VICTORY
     ;不死则移动
     PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
-    JMP NEXTSTEP_L3
-    
+    JMP NEXTSTEP_L3   
     ;胜利结束
     VICTORY:
-    CLEAN
-    DRAWVICTORYSCENCE 
+    CALL DRAWVICTORYSCENCE 
     MOV AH,7
     INT 21H
-    CLEAN
-    JMP STARTPAGE
-    
+    CALL CLEAN
+    JMP STARTPAGE    
     ;死亡结束
     DEAD:
-    CLEAN
-    DRAWDEADSCENCE
+    CALL DRAWDEADSCENCE
     MOV AH,7
     INT 21H
-    CLEAN
+    CALL CLEAN
     JMP STARTPAGE
     
+    LOADGAEM:
+    CALL READFILE
+    LOADLEVEL
+       
     EXITGAME:   
     MOV AH,4CH
     INT 21H
+  ;-------------------------------
+  ;画开始界面  
+  INITSTARTPAGE PROC
+  	WORDSHOW
+    DRAWBORDER
+    DRAWSTART
+    RET
+  INITSTARTPAGE ENDP
     
   INITLEVEL1 PROC
-  	CLEAN
+  	COLORSHOW
+  	CALL CLEAN
   	SETPOSL1;方块位置放到第一关开始位置
   	DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE  
   	DRAWLEVEL1
   	RET
   INITLEVEL1 ENDP
-  
+      
   INITLEVEL2 PROC
-   CLEAN
+   COLORSHOW
+   CALL CLEAN
    SETPOSL2;方块位置放到第二关开始位置
    DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
    DRAWLEVEL2
@@ -634,7 +641,8 @@ START:
   INITLEVEL2 ENDP
   
   INITLEVEL3 PROC
-   CLEAN
+   COLORSHOW
+   CALL CLEAN
    SETPOSL3;方块位置放到第三关开始位置
    DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
    DRAWLEVEL3
@@ -645,18 +653,80 @@ START:
   	PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
   	RET
   PLYOPERATE ENDP
+  
+	;死亡场景
+	DRAWDEADSCENCE PROC
+		;清屏
+		CALL CLEAN
+		;图形
+		DRAWDEADIMG
+		;文字
+		WRITECONWORD
+		RET
+	DRAWDEADSCENCE ENDP
+
+	;胜利场景
+	DRAWVICTORYSCENCE PROC
+		;清屏
+		CALL CLEAN	
+		;图形
+		DRAWVICTORYIMG
+		;文字
+		WRITECONWORD
+		RET
+	DRAWVICTORYSCENCE ENDP
+	
+	  ;清屏
+    CLEAN PROC
+        SVRGI
+        MOV AL,0
+        XOR CX,CX
+        MOV DH,25
+        MOV DL,78
+        MOV BH,0
+        MOV AH,7
+        INT 10H
+        LDRGI
+        RET
+    CLEAN ENDP
+    
+    READFILE PROC
+    	LEA DX,FILENAME
+    	MOV AL,2
+   		MOV CX,0
+    	MOV AH,3DH
+    	INT 21H
+    	
+    	MOV HANDLE,AX
+   		LEA DX,LEVEL
+    	MOV BX,HANDLE
+    	MOV CX,1
+    	MOV AH,3FH
+    	INT 21H
+
+    	MOV AH,3EH
+    	INT 21H
+    	RET
+    READFILE ENDP
+   
+   	WRITEFILE PROC
+ 		MOV AH, 3DH
+		MOV AL, 1
+		LEA DX, FILENAME
+		INT 21H
+		MOV HANDLE,ax
+    
+    	MOV AH,40H
+    	MOV BX,HANDLE
+    	LEA DX,LEVEL
+    	MOV CX,1
+    	INT 21H
+   
+    	MOV AH,3EH
+    	MOV BX,HANDLE
+    	INT 21H
+   		RET
+   	WRITEFILE ENDP
     
 CODES ENDS
     END START
-
-
-
-
-
-
-
-
-  
-
-
-
