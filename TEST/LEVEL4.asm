@@ -1,0 +1,126 @@
+DATAS SEGMENT
+    ;此处输入数据段代码
+    ;颜色变量
+     BLUE DB 0BH
+     RED DB 0CH
+     WHITE DB 0FH
+     BLACK DB 0
+    ;第四关的移动障碍
+    ;WAY是方向1下,2上
+    ;MBARRIER1
+    MBARRIER1X1 DW 100
+    MBARRIER1Y1 DW 60
+    MBARRIER1X2 DW 130
+    MBARRIER1Y2 DW 90
+    WAY1 DB 1
+    ;MBARRIER2
+    MBARRIER2X1 DW 250
+    MBARRIER2Y1 DW 200
+    MBARRIER2X2 DW 270
+    MBARRIER2Y2 DW 300
+    WAY2 DB 2
+    ;MBARRIER3
+    MBARRIER3X1 DW 350
+    MBARRIER3Y1 DW 200
+    MBARRIER3X2 DW 500
+    MBARRIER3Y2 DW 220
+    WAY3 DB 1       
+DATAS ENDS
+
+STACKS SEGMENT
+    ;此处输入堆栈段代码
+STACKS ENDS
+
+CODES SEGMENT
+    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+START:
+    MOV AX,DATAS
+    MOV DS,AX
+    
+     ;绘制矩形,来拼出场景
+     ;参数分别为第一个点的坐标,第二个点的坐标,颜色
+     DRAWRECT MACRO X1,Y1,X2,Y2,COLOR
+        LOCAL ROW,COL
+        XOR BX,BX
+        XOR CX,CX
+        XOR DX,DX
+        MOV AH,0CH
+        MOV AL,COLOR
+        MOV DX,Y1
+        MOV CX,X1
+        ROW:
+        MOV CX,X1
+        COL:INT 10H
+        INC CX
+        CMP CX,X2
+        JB COL
+        INC DX
+        CMP DX,Y2
+        JB ROW
+    ENDM
+    
+    ;此处输入代码段代码
+    
+    CALL DRAWLEVEL4
+    ;CALL BARRIERMOVE
+    
+    MOV AH,7
+    INT 21H
+    
+    MOV AH,4CH
+    INT 21H
+    
+    
+    
+    COLORSHOW PROC
+        MOV AH,0
+        MOV AL,10H
+        INT 10H
+        RET
+   	COLORSHOW ENDP
+   	
+   	;清屏
+    CLEAN PROC
+        MOV AL,0
+        XOR CX,CX
+        MOV DH,25
+        MOV DL,78
+        MOV BH,0
+        MOV AH,7
+        INT 10H
+        RET
+    CLEAN ENDP
+   	
+   	;方块内会移动的障碍
+   	DRAWLEVEL4 PROC
+   		CALL CLEAN
+   		CALL COLORSHOW
+        ;先绘制边框,后生成随机障碍物
+        DRAWRECT 50,50,600,60,BLUE
+        DRAWRECT 50,290,600,300,BLUE
+        DRAWRECT 590,60,600,290,RED
+        CALL LOADMOVEBARRIER
+        RET
+    DRAWLEVEL4 ENDP
+   	
+   	LOADMOVEBARRIER PROC
+   		DRAWRECT MBARRIER1X1,MBARRIER1Y1,MBARRIER1X2,MBARRIER1Y2,BLUE
+   		DRAWRECT MBARRIER2X1,MBARRIER2Y1,MBARRIER2X2,MBARRIER2Y2,BLUE
+   		DRAWRECT MBARRIER3X1,MBARRIER3Y1,MBARRIER3X2,MBARRIER3Y2,BLUE
+   		RET
+   	LOADMOVEBARRIER ENDP
+   	
+CODES ENDS
+    END START
+
+
+
+
+
+
+
+
+
+
+
+

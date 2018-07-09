@@ -1,9 +1,9 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 09:58:01
+Microsoft (R) Macro Assembler Version 6.11		    07/06/18 16:32:49
 tempfile.asm						     Page 1 - 1
 
 
  0000				DATA SEGMENT
- 0000 31 2E 74 78 74 00			FILEP DB '1.txt', 0
+ 0000 4C 2E 74 78 74 00			FILEP DB 'L.txt', 0
  0006 46 69 6C 65 20 45			ERRS DB 'File Error', '$'
        72 72 6F 72 24
  0011 48 41 48 41 48 24			SUSS DB 'HAHAH', '$'
@@ -74,7 +74,9 @@ tempfile.asm						     Page 1 - 1
 
 					
 
-Microsoft (R) Macro Assembler Version 6.11		    07/04/18 09:58:01
+
+
+Microsoft (R) Macro Assembler Version 6.11		    07/06/18 16:32:49
 tempfile.asm						     Symbols 2 - 1
 
 

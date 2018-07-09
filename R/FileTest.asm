@@ -1,5 +1,5 @@
 DATA SEGMENT
-	FILEP DB '1.txt', 0
+	FILEP DB 'L.txt', 0
 	ERRS DB 'File Error', '$'
 	SUSS DB 'HAHAH', '$'
 	READBUF DB 256 DUP('0')
@@ -64,4 +64,6 @@ CODE ENDS
 	END START
 
 	
+
+
 

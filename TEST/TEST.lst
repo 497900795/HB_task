@@ -1,4 +1,4 @@
-Microsoft (R) Macro Assembler Version 6.11		    07/06/18 19:16:34
+Microsoft (R) Macro Assembler Version 6.11		    07/09/18 15:09:25
 tempfile.asm						     Page 1 - 1
 
 
@@ -83,88 +83,7 @@ tempfile.asm						     Page 1 - 1
 				        MOV AH,9
 				        INT 21H
 				    ENDM
-				    
-				    ;画开始页面
-				    DRAWSTART MACRO
-				        SVRGI
-				        WRITESTARTOPTION NGAME,8
-				        WRITESTARTOPTION LGAME,11
-				        WRITESTARTOPTION EGAME,14
-				        LDRGI
-				    ENDM
-				    
-				    ;绘制边框
-				    ;只写首尾的行
-				    WRITESIMPLE MACRO
-				        ;只写首尾
-				        MOV CX,1
-				        ;光标移动
-				        MOV DL,0;首
-				        MOV AH,2
-				        INT 10H
-				        ;写'*'
-				        MOV AL,'*'
-				        MOV AH,0AH
-				        INT 10H
-				        MOV DL,1;首
-				        MOV AH,2
-				        INT 10H
-				        ;写'*'
-				        MOV AL,'*'
-				        MOV AH,0AH
-				        INT 10H
-				        ;光标移动
-				        MOV DL,79;尾
-				        MOV AH,2
-				        INT 10H
-				        ;写'*'
-				        MOV AL,'*'
-				        MOV AH,0AH
-				        INT 10H
-				         MOV DL,78;尾
-				        MOV AH,2
-				        INT 10H
-				        ;写'*'
-				        MOV AL,'*'
-				        MOV AH,0AH
-				        INT 10H
-				        INC DH
-				    ENDM
-				      
-				    ;写满一行  
-				    WRITEFULL MACRO
-				        MOV CX,80
-				        ;光标移动
-				        MOV DL,0
-				        MOV AH,2
-				        INT 10H
-				        MOV AL,'*'
-				        MOV AH,0AH
-				        INT 10H
-				        INC DH
-				   ENDM
-				    ;绘制边框
-				     DRAWBORDER MACRO
-				        LOCAL NEXTLINE,FULL,FIN
-				        XOR DX,DX
-				        XOR BX,BX
-				        NEXTLINE:
-				            CMP DH,0
-				            JZ FULL
-				            CMP DH,24
-				            JZ FULL
-				            CMP DH,25
-				            JAE FIN
-				            WRITESIMPLE
-				            JMP NEXTLINE
-				        ;写满一行
-				        FULL:
-				            WRITEFULL
-				            JMP NEXTLINE
-				        FIN:
-				    ENDM
-				    
-				    
+				       
 				     ;绘制矩形,来拼出场景
 				     ;参数分别为第一个点的坐标,第二个点的坐标,颜色
 				     DRAWRECT MACRO X1,Y1,X2,Y2,COLOR
@@ -177,54 +96,18 @@ tempfile.asm						     Page 1 - 1
 				        MOV DX,Y1
 				        MOV CX,X1
 				        ROW:
-				            MOV CX,X1
-				            COL:INT 10H
-				                INC CX
-				                CMP CX,X2
-				                JB COL
-				            INC DX
-				            CMP DX,Y2
-				            JB ROW
+				        MOV CX,X1
+				        COL:INT 10H
+				        INC CX
+				        CMP CX,X2
+				        JB COL
+				        INC DX
+				        CMP DX,Y2
+				        JB ROW
 				    ENDM
 
 
-				    ;彩色绘图模式
-				    COLORSHOW MACRO
-				        MOV AH,0
-				        MOV AL,10H
-				        INT 10H
-				    ENDM
-				    
-				    ;文字显示模式
-				    WORDSHOW MACRO
-				        MOV AH,0
-				        MOV AL,2
-				        INT 10H
-				    ENDM
-
-
-				    ;绘制第一关
-				    DRAWLEVEL1 MACRO
-				        DRAWRECT 100,60,500,70,BLUE
-				        DRAWRECT 100,120,450,130,BLUE
-				        DRAWRECT 450,120,460,250,BLUE
-				        DRAWRECT 500,60,510,250,BLUE
-				        DRAWRECT 460,240,500,250,RED
-				    ENDM
-
-				    ;绘制第二关
-				    DRAWLEVEL2 MACRO
-				        DRAWRECT 100,60,500,70,BLUE
-				        DRAWRECT 100,120,450,130,BLUE
-				        DRAWRECT 450,120,460,240,BLUE
-				        DRAWRECT 500,60,510,280,BLUE
-				        DRAWRECT 300,240,460,250,BLUE
-				        DRAWRECT 300,280,510,290,BLUE
-				        DRAWRECT 300,250,310,280,RED
-				    ENDM
-
-
-				;随机数
+					;随机数
 				    RANNUM MACRO RAN1,RAN2,RAN3,RAN4
 				      ;第一次
 				      MOV AH,0             ;读时钟计数器值
@@ -267,46 +150,7 @@ tempfile.asm						     Page 1 - 1
 				      MOV BL,AH
 				      MOV RAN4,BX                  
 				    ENDM
-				   
-				    ;加载随机障碍,算法为获取随机数种子
-				    ;产生四个随机数,作为障碍物的偏移
-				    ;偏移施加到点的原始值
-				    LOADBARRIER MACRO
-				        LOCAL NEXTPOINT
-				        RANNUM DELTX1,DELTX2,DELTY1,DELTY2
-				        XOR SI,SI
-				        
-				        NEXTBARRIER:
-				        MOV AX,DELTX1
-				        ADD AX,POSX1[SI]
-				        MOV POSX1[SI],AX
-				        MOV AX,DELTY1
-				        ADD AX,POSY1[SI]
-				        MOV POSY1[SI],AX
-				        MOV AX,DELTX2
-				        ADD AX,POSX2[SI]
-				        MOV POSX2[SI],AX
-				        MOV AX,DELTY2
-				        ADD AX,POSY2[SI]
-				        MOV POSY2[SI],AX
-				        
-				        
-				        DRAWRECT POSX1[SI],POSY1[SI],POSX2[SI],POSY2[SI],BLUE
-				        INC SI
-				        INC SI
-				        CMP SI,10
-				        JB NEXTBARRIER 
-				    ENDM
-				    
-				    ;第三关,平行线内随机生成障碍
-				    DRAWLEVEL3 MACRO
-				        ;先绘制边框,后生成随机障碍物
-				        DRAWRECT 80,100,600,110,BLUE
-				        DRAWRECT 80,220,600,230,BLUE
-				        DRAWRECT 590,110,600,220,RED
-				        LOADBARRIER
-				    ENDM
-				    
+				      
 				      ;玩家移动,小写wasd控制 
 				    PLYMOVE MACRO X1,Y1,X2,Y2
 				        LOCAL MUP,MDOWN,MLEFT,MRIGHT,FINSTEP
@@ -434,121 +278,11 @@ tempfile.asm						     Page 1 - 1
 				        FINJUD:
 				    ENDM
 				    
-				    ;第一关初始化方块
-				    SETPOSL1 MACRO
-				        MOV AX,95
-				        MOV PLYX1,AX
-				        MOV AX,85
-				        MOV PLYY1,AX
-				        MOV AX,115
-				        MOV PLYX2,AX
-				        MOV AX,105
-				        MOV PLYY2,AX
-				    ENDM 
 				    
-				    ;第二关初始化方块
-				    SETPOSL2 MACRO
-				        MOV AX,95
-				        MOV PLYX1,AX
-				        MOV AX,85
-				        MOV PLYY1,AX
-				        MOV AX,115
-				        MOV PLYX2,AX
-				        MOV AX,105
-				        MOV PLYY2,AX
-				    ENDM
-				    
-				     ;第三关初始化方块
-				    SETPOSL3 MACRO
-				        MOV AX,80
-				        MOV PLYX1,AX
-				        MOV AX,160
-				        MOV PLYY1,AX
-				        MOV AX,100
-				        MOV PLYX2,AX
-				        MOV AX,180
-				        MOV PLYY2,AX
-				    ENDM
-				    
-				    
-				    ;图形
-				    DRAWDEADIMG MACRO
-				    	;字母D,1号
-				     	DRAWRECT 80,100,100,210,BLUE
-				        DRAWRECT 80,100,150,120,BLUE
-				        DRAWRECT 140,110,160,210,BLUE
-				        DRAWRECT 80,200,150,220,BLUE
-				        ;字母E
-				        DRAWRECT 200,100,280,120,BLUE
-				        DRAWRECT 200,150,280,170,BLUE
-				        DRAWRECT 200,200,280,220,BLUE
-				        DRAWRECT 200,100,220,220,BLUE
-				        ;字母A
-				        DRAWRECT 330,100,420,120,BLUE
-				        DRAWRECT 330,150,420,170,BLUE
-				        DRAWRECT 330,100,350,220,BLUE
-				        DRAWRECT 400,100,420,220,BLUE
-				        ;字母D,2号
-				     	DRAWRECT 470,100,540,120,BLUE
-				        DRAWRECT 470,200,540,220,BLUE
-				        DRAWRECT 530,110,550,210,BLUE
-				        DRAWRECT 470,100,490,220,BLUE
-				    ENDM
-				    ;文字
-				    WRITECONWORD MACRO
-				    	LOCAL WRITENEXT
-				        XOR BX,BX
-				        MOV DH,22
-				        MOV DL,25
-				        MOV AH,2
-				        INT 10H
-				        
-				        MOV CX,LENCONSTR
-				        XOR SI,SI
-				        WRITENEXT:
-				        MOV AH,2
-				        MOV DL,CONSTR[SI]
-				        INT 21H
-				        INC SI
-				        LOOP WRITENEXT
-				    ENDM
-				    
-				  
-				    
-				    DRAWVICTORYIMG MACRO
-				    	;W
-				    	DRAWRECT 100,80,120,220,BLUE
-				    	DRAWRECT 140,80,160,220,BLUE
-				    	DRAWRECT 180,80,200,220,BLUE
-				    	DRAWRECT 100,200,200,220,BLUE
-				    	;I
-				    	DRAWRECT 250,80,330,100,BLUE
-				    	DRAWRECT 280,80,300,220,BLUE
-				    	DRAWRECT 250,200,330,220,BLUE
-				    	;N
-				    	DRAWRECT 380,80,400,220,BLUE
-				    	DRAWRECT 380,80,430,100,BLUE
-				    	DRAWRECT 430,80,450,220,BLUE
-				    	DRAWRECT 450,200,480,220,BLUE
-				    	DRAWRECT 480,80,500,220,BLUE
-				    ENDM
-				    
-				    ;加载到特定关卡
-				    LOADLEVEL MACRO
-				    MOV AL,'1'
-				    CMP AL,LEVEL
-				    JZ PLAYLEVEL1
-				    MOV AL,'2'
-				    CMP AL,LEVEL
-				    JZ PLAYLEVEL2
-				    MOV AL,'3'
-				    CMP AL,LEVEL
-				    JZ PLAYLEVEL3
-				    ENDM
 				    ;------------------------------
 				    ;开始界面
  0005				    STARTPAGE:
- 0005  E8 035D			    CALL INITSTARTPAGE
+ 0005  E8 03F1			    CALL INITSTARTPAGE
 				    ;选项1,新游戏
  0008  B4 07			    MOV AH,7
  000A  CD 21			    INT 21H
@@ -560,14 +294,14 @@ tempfile.asm						     Page 1 - 1
  0012  75 03 E9 0326		   	JZ LOADGAEM
 				    ;3.退出游戏
  0017  3C 33			    CMP AL,'3'
- 0019  75 03 E9 0343		    JZ EXITGAME   
+ 0019  75 03 E9 0325		    JZ EXITGAME   
 				    
 				    ;第一关
  001E				    PLAYLEVEL1:
  001E  B0 31			    MOV AL,'1'
  0020  A2 0077 R		    MOV LEVEL,AL
- 0023  E8 0CAD			    CALL WRITEFILE
- 0026  E8 03DE			   	CALL INITLEVEL1
+ 0023  E8 0868			    CALL WRITEFILE
+ 0026  E8 048E			   	CALL INITLEVEL1
  0029				    NEXTSTEP_L1:
 				    JUDGE PLYX1,PLYY1
  0029  8B 0E 0052 R	     1	        MOV CX,PLYX1
@@ -615,14 +349,14 @@ tempfile.asm						     Page 1 - 1
  0090  3A 06 001F R		    CMP AL,RED
  0094  74 05			    JZ PLAYLEVEL2
 				    ;不死则移动
- 0096  E8 0712			    CALL PLYOPERATE
+ 0096  E8 06DF			    CALL PLYOPERATE
  0099  EB 8E			    JMP NEXTSTEP_L1    
 				    ;第二关
  009B				    PLAYLEVEL2:
  009B  B0 32			    MOV AL,'2'
  009D  A2 0077 R		    MOV LEVEL,AL
- 00A0  E8 0C30			    CALL WRITEFILE
- 00A3  E8 045D			   	CALL INITLEVEL2
+ 00A0  E8 07EB			    CALL WRITEFILE
+ 00A3  E8 066A			   	CALL INITLEVEL2
  00A6				    NEXTSTEP_L2:
 				    JUDGE PLYX1,PLYY1
  00A6  8B 0E 0052 R	     1	        MOV CX,PLYX1
@@ -682,14 +416,14 @@ tempfile.asm						     Page 1 - 1
  0126  8B 16 0054 R	     2	        MOV DX,PLYY1
  012A  8B 0E 0052 R	     2	        MOV CX,PLYX1
  012E			     2	        ??0007:
- 012E  8B 0E 0052 R	     2	            MOV CX,PLYX1
- 0132  CD 10		     2	            ??0008:INT 10H
- 0134  41		     2	                INC CX
- 0135  3B 0E 0056 R	     2	                CMP CX,PLYX2
- 0139  72 F7		     2	                JB ??0008
- 013B  42		     2	            INC DX
- 013C  3B 16 0058 R	     2	            CMP DX,PLYY2
- 0140  72 EC		     2	            JB ??0007
+ 012E  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 0132  CD 10		     2	        ??0008:INT 10H
+ 0134  41		     2	        INC CX
+ 0135  3B 0E 0056 R	     2	        CMP CX,PLYX2
+ 0139  72 F7		     2	        JB ??0008
+ 013B  42		     2	        INC DX
+ 013C  3B 16 0058 R	     2	        CMP DX,PLYY2
+ 0140  72 EC		     2	        JB ??0007
  0142  58		     1	        POP AX
  0143  3C 77		     1	        CMP AL,'w'
  0145  74 0E		     1	        JZ ??0002
@@ -741,21 +475,21 @@ tempfile.asm						     Page 1 - 1
  01C0  8B 16 0054 R	     2	        MOV DX,PLYY1
  01C4  8B 0E 0052 R	     2	        MOV CX,PLYX1
  01C8			     2	        ??0009:
- 01C8  8B 0E 0052 R	     2	            MOV CX,PLYX1
- 01CC  CD 10		     2	            ??000A:INT 10H
- 01CE  41		     2	                INC CX
- 01CF  3B 0E 0056 R	     2	                CMP CX,PLYX2
- 01D3  72 F7		     2	                JB ??000A
- 01D5  42		     2	            INC DX
- 01D6  3B 16 0058 R	     2	            CMP DX,PLYY2
- 01DA  72 EC		     2	            JB ??0009
+ 01C8  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 01CC  CD 10		     2	        ??000A:INT 10H
+ 01CE  41		     2	        INC CX
+ 01CF  3B 0E 0056 R	     2	        CMP CX,PLYX2
+ 01D3  72 F7		     2	        JB ??000A
+ 01D5  42		     2	        INC DX
+ 01D6  3B 16 0058 R	     2	        CMP DX,PLYY2
+ 01DA  72 EC		     2	        JB ??0009
  01DC  E9 FEC7			    JMP NEXTSTEP_L2    
 				    ;第三关
  01DF				    PLAYLEVEL3:
  01DF  B0 33			    MOV AL,'3'
  01E1  A2 0077 R		    MOV LEVEL,AL
- 01E4  E8 0AEC			    CALL WRITEFILE
- 01E7  E8 045D			   	CALL INITLEVEL3
+ 01E4  E8 06A7			    CALL WRITEFILE
+ 01E7  E8 055A			   	CALL INITLEVEL3
  01EA				    NEXTSTEP_L3:
 				    JUDGE PLYX1,PLYY1
  01EA  8B 0E 0052 R	     1	        MOV CX,PLYX1
@@ -815,14 +549,14 @@ tempfile.asm						     Page 1 - 1
  026A  8B 16 0054 R	     2	        MOV DX,PLYY1
  026E  8B 0E 0052 R	     2	        MOV CX,PLYX1
  0272			     2	        ??0011:
- 0272  8B 0E 0052 R	     2	            MOV CX,PLYX1
- 0276  CD 10		     2	            ??0012:INT 10H
- 0278  41		     2	                INC CX
- 0279  3B 0E 0056 R	     2	                CMP CX,PLYX2
- 027D  72 F7		     2	                JB ??0012
- 027F  42		     2	            INC DX
- 0280  3B 16 0058 R	     2	            CMP DX,PLYY2
- 0284  72 EC		     2	            JB ??0011
+ 0272  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 0276  CD 10		     2	        ??0012:INT 10H
+ 0278  41		     2	        INC CX
+ 0279  3B 0E 0056 R	     2	        CMP CX,PLYX2
+ 027D  72 F7		     2	        JB ??0012
+ 027F  42		     2	        INC DX
+ 0280  3B 16 0058 R	     2	        CMP DX,PLYY2
+ 0284  72 EC		     2	        JB ??0011
  0286  58		     1	        POP AX
  0287  3C 77		     1	        CMP AL,'w'
  0289  74 0E		     1	        JZ ??000C
@@ -874,1216 +608,1346 @@ tempfile.asm						     Page 1 - 1
  0304  8B 16 0054 R	     2	        MOV DX,PLYY1
  0308  8B 0E 0052 R	     2	        MOV CX,PLYX1
  030C			     2	        ??0013:
- 030C  8B 0E 0052 R	     2	            MOV CX,PLYX1
- 0310  CD 10		     2	            ??0014:INT 10H
- 0312  41		     2	                INC CX
- 0313  3B 0E 0056 R	     2	                CMP CX,PLYX2
- 0317  72 F7		     2	                JB ??0014
- 0319  42		     2	            INC DX
- 031A  3B 16 0058 R	     2	            CMP DX,PLYY2
- 031E  72 EC		     2	            JB ??0013
+ 030C  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 0310  CD 10		     2	        ??0014:INT 10H
+ 0312  41		     2	        INC CX
+ 0313  3B 0E 0056 R	     2	        CMP CX,PLYX2
+ 0317  72 F7		     2	        JB ??0014
+ 0319  42		     2	        INC DX
+ 031A  3B 16 0058 R	     2	        CMP DX,PLYY2
+ 031E  72 EC		     2	        JB ??0013
  0320  E9 FEC7			    JMP NEXTSTEP_L3   
 				    ;胜利结束
  0323				    VICTORY:
- 0323  E8 07A6			    CALL DRAWVICTORYSCENCE 
+ 0323  E8 0523			    CALL DRAWVICTORYSCENCE 
  0326  B4 07			    MOV AH,7
  0328  CD 21			    INT 21H
- 032A  E8 096B			    CALL CLEAN
+ 032A  E8 0526			    CALL CLEAN
  032D  E9 FCD5			    JMP STARTPAGE    
 				    ;死亡结束
  0330				    DEAD:
- 0330  E8 053F			    CALL DRAWDEADSCENCE
+ 0330  E8 050C			    CALL DRAWDEADSCENCE
  0333  B4 07			    MOV AH,7
  0335  CD 21			    INT 21H
- 0337  E8 095E			    CALL CLEAN
+ 0337  E8 0519			    CALL CLEAN
  033A  E9 FCC8			    JMP STARTPAGE
 				    
  033D				    LOADGAEM:
- 033D  E8 096F			    CALL READFILE
-				    LOADLEVEL
- 0340  B0 31		     1	    MOV AL,'1'
- 0342  3A 06 0077 R	     1	    CMP AL,LEVEL
- 0346  75 03 E9 FCD3	     1	    JZ PLAYLEVEL1
- 034B  B0 32		     1	    MOV AL,'2'
- 034D  3A 06 0077 R	     1	    CMP AL,LEVEL
- 0351  75 03 E9 FD45	     1	    JZ PLAYLEVEL2
- 0356  B0 33		     1	    MOV AL,'3'
- 0358  3A 06 0077 R	     1	    CMP AL,LEVEL
- 035C  75 03 E9 FE7E	     1	    JZ PLAYLEVEL3
+ 033D  E8 052A			    CALL READFILE
+ 0340  E8 0570			    CALL LOADLEVEL
 				       
- 0361				    EXITGAME:   
- 0361  B4 4C			    MOV AH,4CH
- 0363  CD 21			    INT 21H
+ 0343				    EXITGAME:   
+ 0343  B4 4C			    MOV AH,4CH
+ 0345  CD 21			    INT 21H
 				  ;-------------------------------
-				  ;画开始界面  
- 0365				  INITSTARTPAGE PROC
-				  	WORDSHOW
- 0365  B4 00		     1	        MOV AH,0
- 0367  B0 02		     1	        MOV AL,2
- 0369  CD 10		     1	        INT 10H
-				    DRAWBORDER
- 036B  33 D2		     1	        XOR DX,DX
- 036D  33 DB		     1	        XOR BX,BX
- 036F			     1	        ??0015:
- 036F  80 FE 00		     1	            CMP DH,0
- 0372  74 41		     1	            JZ ??0016
- 0374  80 FE 18		     1	            CMP DH,24
- 0377  74 3C		     1	            JZ ??0016
- 0379  80 FE 19		     1	            CMP DH,25
- 037C  73 4A		     1	            JAE ??0017
- 037E  B9 0001		     2	        MOV CX,1
- 0381  B2 00		     2	        MOV DL,0;首
- 0383  B4 02		     2	        MOV AH,2
- 0385  CD 10		     2	        INT 10H
- 0387  B0 2A		     2	        MOV AL,'*'
- 0389  B4 0A		     2	        MOV AH,0AH
- 038B  CD 10		     2	        INT 10H
- 038D  B2 01		     2	        MOV DL,1;首
- 038F  B4 02		     2	        MOV AH,2
- 0391  CD 10		     2	        INT 10H
- 0393  B0 2A		     2	        MOV AL,'*'
- 0395  B4 0A		     2	        MOV AH,0AH
- 0397  CD 10		     2	        INT 10H
- 0399  B2 4F		     2	        MOV DL,79;尾
- 039B  B4 02		     2	        MOV AH,2
- 039D  CD 10		     2	        INT 10H
- 039F  B0 2A		     2	        MOV AL,'*'
- 03A1  B4 0A		     2	        MOV AH,0AH
- 03A3  CD 10		     2	        INT 10H
- 03A5  B2 4E		     2	         MOV DL,78;尾
- 03A7  B4 02		     2	        MOV AH,2
- 03A9  CD 10		     2	        INT 10H
- 03AB  B0 2A		     2	        MOV AL,'*'
- 03AD  B4 0A		     2	        MOV AH,0AH
- 03AF  CD 10		     2	        INT 10H
- 03B1  FE C6		     2	        INC DH
- 03B3  EB BA		     1	            JMP ??0015
- 03B5			     1	        ??0016:
- 03B5  B9 0050		     2	        MOV CX,80
- 03B8  B2 00		     2	        MOV DL,0
- 03BA  B4 02		     2	        MOV AH,2
- 03BC  CD 10		     2	        INT 10H
- 03BE  B0 2A		     2	        MOV AL,'*'
- 03C0  B4 0A		     2	        MOV AH,0AH
- 03C2  CD 10		     2	        INT 10H
- 03C4  FE C6		     2	        INC DH
- 03C6  EB A7		     1	            JMP ??0015
- 03C8			     1	        ??0017:
-				    DRAWSTART
- 03C8  50		     2	        PUSH AX
- 03C9  53		     2	        PUSH BX
- 03CA  51		     2	        PUSH CX
- 03CB  52		     2	        PUSH DX
- 03CC  B7 00		     2	        MOV BH,0
- 03CE  B6 08		     2	        MOV DH,8
- 03D0  B2 1C		     2	        MOV DL,28
- 03D2  B4 02		     2	        MOV AH,2
- 03D4  CD 10		     2	        INT 10H
- 03D6  8D 16 0000 R	     2	        LEA DX,NGAME
- 03DA  B4 09		     2	        MOV AH,9
- 03DC  CD 21		     2	        INT 21H
- 03DE  B7 00		     2	        MOV BH,0
- 03E0  B6 0B		     2	        MOV DH,11
- 03E2  B2 1C		     2	        MOV DL,28
- 03E4  B4 02		     2	        MOV AH,2
- 03E6  CD 10		     2	        INT 10H
- 03E8  8D 16 000B R	     2	        LEA DX,LGAME
- 03EC  B4 09		     2	        MOV AH,9
- 03EE  CD 21		     2	        INT 21H
- 03F0  B7 00		     2	        MOV BH,0
- 03F2  B6 0E		     2	        MOV DH,14
- 03F4  B2 1C		     2	        MOV DL,28
- 03F6  B4 02		     2	        MOV AH,2
- 03F8  CD 10		     2	        INT 10H
- 03FA  8D 16 0017 R	     2	        LEA DX,EGAME
- 03FE  B4 09		     2	        MOV AH,9
- 0400  CD 21		     2	        INT 21H
- 0402  58		     2	        POP AX
- 0403  5B		     2	        POP BX
- 0404  59		     2	        POP CX
- 0405  5A		     2	        POP DX
- 0406  C3			    RET
- 0407				  INITSTARTPAGE ENDP
+				  
+				    ;彩色绘图模式
+ 0347				    COLORSHOW PROC
+ 0347  B4 00			        MOV AH,0
+ 0349  B0 10			        MOV AL,10H
+ 034B  CD 10			        INT 10H
+ 034D  C3			        RET
+ 034E				   	COLORSHOW ENDP
 				    
- 0407				  INITLEVEL1 PROC
-				  	COLORSHOW
- 0407  B4 00		     1	        MOV AH,0
- 0409  B0 10		     1	        MOV AL,10H
- 040B  CD 10		     1	        INT 10H
- 040D  E8 0888			  	CALL CLEAN
-				  	SETPOSL1;方块位置放到第一关开始位置
- 0410  B8 005F		     1	        MOV AX,95
- 0413  A3 0052 R	     1	        MOV PLYX1,AX
- 0416  B8 0055		     1	        MOV AX,85
- 0419  A3 0054 R	     1	        MOV PLYY1,AX
- 041C  B8 0073		     1	        MOV AX,115
- 041F  A3 0056 R	     1	        MOV PLYX2,AX
- 0422  B8 0069		     1	        MOV AX,105
- 0425  A3 0058 R	     1	        MOV PLYY2,AX
-				  	DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE  
- 0428  33 DB		     1	        XOR BX,BX
- 042A  33 C9		     1	        XOR CX,CX
- 042C  33 D2		     1	        XOR DX,DX
- 042E  B4 0C		     1	        MOV AH,0CH
- 0430  A0 0020 R	     1	        MOV AL,WHITE
- 0433  8B 16 0054 R	     1	        MOV DX,PLYY1
- 0437  8B 0E 0052 R	     1	        MOV CX,PLYX1
- 043B			     1	        ??0018:
- 043B  8B 0E 0052 R	     1	            MOV CX,PLYX1
- 043F  CD 10		     1	            ??0019:INT 10H
- 0441  41		     1	                INC CX
- 0442  3B 0E 0056 R	     1	                CMP CX,PLYX2
- 0446  72 F7		     1	                JB ??0019
- 0448  42		     1	            INC DX
- 0449  3B 16 0058 R	     1	            CMP DX,PLYY2
- 044D  72 EC		     1	            JB ??0018
-				  	DRAWLEVEL1
- 044F  33 DB		     2	        XOR BX,BX
- 0451  33 C9		     2	        XOR CX,CX
- 0453  33 D2		     2	        XOR DX,DX
- 0455  B4 0C		     2	        MOV AH,0CH
- 0457  A0 001E R	     2	        MOV AL,BLUE
- 045A  BA 003C		     2	        MOV DX,60
- 045D  B9 0064		     2	        MOV CX,100
- 0460			     2	        ??001A:
- 0460  B9 0064		     2	            MOV CX,100
- 0463  CD 10		     2	            ??001B:INT 10H
- 0465  41		     2	                INC CX
- 0466  81 F9 01F4	     2	                CMP CX,500
- 046A  72 F7		     2	                JB ??001B
- 046C  42		     2	            INC DX
- 046D  83 FA 46		     2	            CMP DX,70
- 0470  72 EE		     2	            JB ??001A
- 0472  33 DB		     2	        XOR BX,BX
- 0474  33 C9		     2	        XOR CX,CX
- 0476  33 D2		     2	        XOR DX,DX
- 0478  B4 0C		     2	        MOV AH,0CH
- 047A  A0 001E R	     2	        MOV AL,BLUE
- 047D  BA 0078		     2	        MOV DX,120
- 0480  B9 0064		     2	        MOV CX,100
- 0483			     2	        ??001C:
- 0483  B9 0064		     2	            MOV CX,100
- 0486  CD 10		     2	            ??001D:INT 10H
- 0488  41		     2	                INC CX
- 0489  81 F9 01C2	     2	                CMP CX,450
- 048D  72 F7		     2	                JB ??001D
- 048F  42		     2	            INC DX
- 0490  81 FA 0082	     2	            CMP DX,130
- 0494  72 ED		     2	            JB ??001C
- 0496  33 DB		     2	        XOR BX,BX
- 0498  33 C9		     2	        XOR CX,CX
- 049A  33 D2		     2	        XOR DX,DX
- 049C  B4 0C		     2	        MOV AH,0CH
- 049E  A0 001E R	     2	        MOV AL,BLUE
- 04A1  BA 0078		     2	        MOV DX,120
- 04A4  B9 01C2		     2	        MOV CX,450
- 04A7			     2	        ??001E:
- 04A7  B9 01C2		     2	            MOV CX,450
- 04AA  CD 10		     2	            ??001F:INT 10H
- 04AC  41		     2	                INC CX
- 04AD  81 F9 01CC	     2	                CMP CX,460
- 04B1  72 F7		     2	                JB ??001F
- 04B3  42		     2	            INC DX
- 04B4  81 FA 00FA	     2	            CMP DX,250
- 04B8  72 ED		     2	            JB ??001E
- 04BA  33 DB		     2	        XOR BX,BX
- 04BC  33 C9		     2	        XOR CX,CX
- 04BE  33 D2		     2	        XOR DX,DX
- 04C0  B4 0C		     2	        MOV AH,0CH
- 04C2  A0 001E R	     2	        MOV AL,BLUE
- 04C5  BA 003C		     2	        MOV DX,60
- 04C8  B9 01F4		     2	        MOV CX,500
- 04CB			     2	        ??0020:
- 04CB  B9 01F4		     2	            MOV CX,500
- 04CE  CD 10		     2	            ??0021:INT 10H
- 04D0  41		     2	                INC CX
- 04D1  81 F9 01FE	     2	                CMP CX,510
- 04D5  72 F7		     2	                JB ??0021
- 04D7  42		     2	            INC DX
- 04D8  81 FA 00FA	     2	            CMP DX,250
- 04DC  72 ED		     2	            JB ??0020
- 04DE  33 DB		     2	        XOR BX,BX
- 04E0  33 C9		     2	        XOR CX,CX
- 04E2  33 D2		     2	        XOR DX,DX
- 04E4  B4 0C		     2	        MOV AH,0CH
- 04E6  A0 001F R	     2	        MOV AL,RED
- 04E9  BA 00F0		     2	        MOV DX,240
- 04EC  B9 01CC		     2	        MOV CX,460
- 04EF			     2	        ??0022:
- 04EF  B9 01CC		     2	            MOV CX,460
- 04F2  CD 10		     2	            ??0023:INT 10H
- 04F4  41		     2	                INC CX
- 04F5  81 F9 01F4	     2	                CMP CX,500
- 04F9  72 F7		     2	                JB ??0023
- 04FB  42		     2	            INC DX
- 04FC  81 FA 00FA	     2	            CMP DX,250
- 0500  72 ED		     2	            JB ??0022
- 0502  C3			  	RET
- 0503				  INITLEVEL1 ENDP
+				    ;文字显示模式
+ 034E				    WORDSHOW PROC
+ 034E  B4 00			        MOV AH,0
+ 0350  B0 02			        MOV AL,2
+ 0352  CD 10			        INT 10H
+ 0354  C3			        RET
+ 0355				    WORDSHOW ENDP
+				  	
+				  	;绘制边框
+				    ;只写首尾的行
+ 0355				    WRITESIMPLE PROC
+				        ;只写首尾
+ 0355  B9 0001			        MOV CX,1
+				        ;光标移动
+ 0358  B2 00			        MOV DL,0;首
+ 035A  B4 02			        MOV AH,2
+ 035C  CD 10			        INT 10H
+				        ;写'*'
+ 035E  B0 2A			        MOV AL,'*'
+ 0360  B4 0A			        MOV AH,0AH
+ 0362  CD 10			        INT 10H
+ 0364  B2 01			        MOV DL,1;首
+ 0366  B4 02			        MOV AH,2
+ 0368  CD 10			        INT 10H
+				        ;写'*'
+ 036A  B0 2A			        MOV AL,'*'
+ 036C  B4 0A			        MOV AH,0AH
+ 036E  CD 10			        INT 10H
+				        ;光标移动
+ 0370  B2 4F			        MOV DL,79;尾
+ 0372  B4 02			        MOV AH,2
+ 0374  CD 10			        INT 10H
+				        ;写'*'
+ 0376  B0 2A			        MOV AL,'*'
+ 0378  B4 0A			        MOV AH,0AH
+ 037A  CD 10			        INT 10H
+ 037C  B2 4E			         MOV DL,78;尾
+ 037E  B4 02			        MOV AH,2
+ 0380  CD 10			        INT 10H
+				        ;写'*'
+ 0382  B0 2A			        MOV AL,'*'
+ 0384  B4 0A			        MOV AH,0AH
+ 0386  CD 10			        INT 10H
+ 0388  FE C6			        INC DH
+ 038A  C3			        RET
+ 038B				    WRITESIMPLE ENDP
 				      
- 0503				  INITLEVEL2 PROC
-				   COLORSHOW
- 0503  B4 00		     1	        MOV AH,0
- 0505  B0 10		     1	        MOV AL,10H
- 0507  CD 10		     1	        INT 10H
- 0509  E8 078C			   CALL CLEAN
-				   SETPOSL2;方块位置放到第二关开始位置
- 050C  B8 005F		     1	        MOV AX,95
- 050F  A3 0052 R	     1	        MOV PLYX1,AX
- 0512  B8 0055		     1	        MOV AX,85
- 0515  A3 0054 R	     1	        MOV PLYY1,AX
- 0518  B8 0073		     1	        MOV AX,115
- 051B  A3 0056 R	     1	        MOV PLYX2,AX
- 051E  B8 0069		     1	        MOV AX,105
- 0521  A3 0058 R	     1	        MOV PLYY2,AX
-				   DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
- 0524  33 DB		     1	        XOR BX,BX
- 0526  33 C9		     1	        XOR CX,CX
- 0528  33 D2		     1	        XOR DX,DX
- 052A  B4 0C		     1	        MOV AH,0CH
- 052C  A0 0020 R	     1	        MOV AL,WHITE
- 052F  8B 16 0054 R	     1	        MOV DX,PLYY1
- 0533  8B 0E 0052 R	     1	        MOV CX,PLYX1
- 0537			     1	        ??0024:
- 0537  8B 0E 0052 R	     1	            MOV CX,PLYX1
- 053B  CD 10		     1	            ??0025:INT 10H
- 053D  41		     1	                INC CX
- 053E  3B 0E 0056 R	     1	                CMP CX,PLYX2
- 0542  72 F7		     1	                JB ??0025
- 0544  42		     1	            INC DX
- 0545  3B 16 0058 R	     1	            CMP DX,PLYY2
- 0549  72 EC		     1	            JB ??0024
-				   DRAWLEVEL2
- 054B  33 DB		     2	        XOR BX,BX
- 054D  33 C9		     2	        XOR CX,CX
- 054F  33 D2		     2	        XOR DX,DX
- 0551  B4 0C		     2	        MOV AH,0CH
- 0553  A0 001E R	     2	        MOV AL,BLUE
- 0556  BA 003C		     2	        MOV DX,60
- 0559  B9 0064		     2	        MOV CX,100
- 055C			     2	        ??0026:
- 055C  B9 0064		     2	            MOV CX,100
- 055F  CD 10		     2	            ??0027:INT 10H
- 0561  41		     2	                INC CX
- 0562  81 F9 01F4	     2	                CMP CX,500
- 0566  72 F7		     2	                JB ??0027
- 0568  42		     2	            INC DX
- 0569  83 FA 46		     2	            CMP DX,70
- 056C  72 EE		     2	            JB ??0026
- 056E  33 DB		     2	        XOR BX,BX
- 0570  33 C9		     2	        XOR CX,CX
- 0572  33 D2		     2	        XOR DX,DX
- 0574  B4 0C		     2	        MOV AH,0CH
- 0576  A0 001E R	     2	        MOV AL,BLUE
- 0579  BA 0078		     2	        MOV DX,120
- 057C  B9 0064		     2	        MOV CX,100
- 057F			     2	        ??0028:
- 057F  B9 0064		     2	            MOV CX,100
- 0582  CD 10		     2	            ??0029:INT 10H
- 0584  41		     2	                INC CX
- 0585  81 F9 01C2	     2	                CMP CX,450
- 0589  72 F7		     2	                JB ??0029
- 058B  42		     2	            INC DX
- 058C  81 FA 0082	     2	            CMP DX,130
- 0590  72 ED		     2	            JB ??0028
- 0592  33 DB		     2	        XOR BX,BX
- 0594  33 C9		     2	        XOR CX,CX
- 0596  33 D2		     2	        XOR DX,DX
- 0598  B4 0C		     2	        MOV AH,0CH
- 059A  A0 001E R	     2	        MOV AL,BLUE
- 059D  BA 0078		     2	        MOV DX,120
- 05A0  B9 01C2		     2	        MOV CX,450
- 05A3			     2	        ??002A:
- 05A3  B9 01C2		     2	            MOV CX,450
- 05A6  CD 10		     2	            ??002B:INT 10H
- 05A8  41		     2	                INC CX
- 05A9  81 F9 01CC	     2	                CMP CX,460
- 05AD  72 F7		     2	                JB ??002B
- 05AF  42		     2	            INC DX
- 05B0  81 FA 00F0	     2	            CMP DX,240
- 05B4  72 ED		     2	            JB ??002A
- 05B6  33 DB		     2	        XOR BX,BX
- 05B8  33 C9		     2	        XOR CX,CX
- 05BA  33 D2		     2	        XOR DX,DX
- 05BC  B4 0C		     2	        MOV AH,0CH
- 05BE  A0 001E R	     2	        MOV AL,BLUE
- 05C1  BA 003C		     2	        MOV DX,60
- 05C4  B9 01F4		     2	        MOV CX,500
- 05C7			     2	        ??002C:
- 05C7  B9 01F4		     2	            MOV CX,500
- 05CA  CD 10		     2	            ??002D:INT 10H
- 05CC  41		     2	                INC CX
- 05CD  81 F9 01FE	     2	                CMP CX,510
- 05D1  72 F7		     2	                JB ??002D
- 05D3  42		     2	            INC DX
- 05D4  81 FA 0118	     2	            CMP DX,280
- 05D8  72 ED		     2	            JB ??002C
- 05DA  33 DB		     2	        XOR BX,BX
- 05DC  33 C9		     2	        XOR CX,CX
- 05DE  33 D2		     2	        XOR DX,DX
- 05E0  B4 0C		     2	        MOV AH,0CH
- 05E2  A0 001E R	     2	        MOV AL,BLUE
- 05E5  BA 00F0		     2	        MOV DX,240
- 05E8  B9 012C		     2	        MOV CX,300
- 05EB			     2	        ??002E:
- 05EB  B9 012C		     2	            MOV CX,300
- 05EE  CD 10		     2	            ??002F:INT 10H
- 05F0  41		     2	                INC CX
- 05F1  81 F9 01CC	     2	                CMP CX,460
- 05F5  72 F7		     2	                JB ??002F
- 05F7  42		     2	            INC DX
- 05F8  81 FA 00FA	     2	            CMP DX,250
- 05FC  72 ED		     2	            JB ??002E
- 05FE  33 DB		     2	        XOR BX,BX
- 0600  33 C9		     2	        XOR CX,CX
- 0602  33 D2		     2	        XOR DX,DX
- 0604  B4 0C		     2	        MOV AH,0CH
- 0606  A0 001E R	     2	        MOV AL,BLUE
- 0609  BA 0118		     2	        MOV DX,280
- 060C  B9 012C		     2	        MOV CX,300
- 060F			     2	        ??0030:
- 060F  B9 012C		     2	            MOV CX,300
- 0612  CD 10		     2	            ??0031:INT 10H
- 0614  41		     2	                INC CX
- 0615  81 F9 01FE	     2	                CMP CX,510
- 0619  72 F7		     2	                JB ??0031
- 061B  42		     2	            INC DX
- 061C  81 FA 0122	     2	            CMP DX,290
- 0620  72 ED		     2	            JB ??0030
- 0622  33 DB		     2	        XOR BX,BX
- 0624  33 C9		     2	        XOR CX,CX
- 0626  33 D2		     2	        XOR DX,DX
- 0628  B4 0C		     2	        MOV AH,0CH
- 062A  A0 001F R	     2	        MOV AL,RED
- 062D  BA 00FA		     2	        MOV DX,250
- 0630  B9 012C		     2	        MOV CX,300
- 0633			     2	        ??0032:
- 0633  B9 012C		     2	            MOV CX,300
- 0636  CD 10		     2	            ??0033:INT 10H
- 0638  41		     2	                INC CX
- 0639  81 F9 0136	     2	                CMP CX,310
- 063D  72 F7		     2	                JB ??0033
- 063F  42		     2	            INC DX
- 0640  81 FA 0118	     2	            CMP DX,280
- 0644  72 ED		     2	            JB ??0032
- 0646  C3			   RET
- 0647				  INITLEVEL2 ENDP
+				    ;写满一行  
+ 038B				    WRITEFULL PROC
+ 038B  B9 0050			        MOV CX,80
+				        ;光标移动
+ 038E  B2 00			        MOV DL,0
+ 0390  B4 02			        MOV AH,2
+ 0392  CD 10			        INT 10H
+ 0394  B0 2A			        MOV AL,'*'
+ 0396  B4 0A			        MOV AH,0AH
+ 0398  CD 10			        INT 10H
+ 039A  FE C6			        INC DH
+ 039C  C3			        RET
+ 039D				   WRITEFULL ENDP
+				   
+				    ;绘制边框
+ 039D				     DRAWBORDER PROC
+ 039D  33 D2			        XOR DX,DX
+ 039F  33 DB			        XOR BX,BX
+ 03A1				        NEXTLINE:
+ 03A1  80 FE 00			        CMP DH,0
+ 03A4  74 0F			       	JZ FULL
+ 03A6  80 FE 18			        CMP DH,24
+ 03A9  74 0A			        JZ FULL
+ 03AB  80 FE 19			        CMP DH,25
+ 03AE  73 0A			        JAE FIN
+ 03B0  E8 FFA2			        CALL WRITESIMPLE
+ 03B3  EB EC			        JMP NEXTLINE
+				        ;写满一行
+ 03B5				        FULL:
+ 03B5  E8 FFD3			        CALL WRITEFULL
+ 03B8  EB E7			        JMP NEXTLINE
+ 03BA				        FIN:
+ 03BA				    DRAWBORDER ENDP
 				  
- 0647				  INITLEVEL3 PROC
-				   COLORSHOW
- 0647  B4 00		     1	        MOV AH,0
- 0649  B0 10		     1	        MOV AL,10H
- 064B  CD 10		     1	        INT 10H
- 064D  E8 0648			   CALL CLEAN
-				   SETPOSL3;方块位置放到第三关开始位置
- 0650  B8 0050		     1	        MOV AX,80
- 0653  A3 0052 R	     1	        MOV PLYX1,AX
- 0656  B8 00A0		     1	        MOV AX,160
- 0659  A3 0054 R	     1	        MOV PLYY1,AX
- 065C  B8 0064		     1	        MOV AX,100
- 065F  A3 0056 R	     1	        MOV PLYX2,AX
- 0662  B8 00B4		     1	        MOV AX,180
- 0665  A3 0058 R	     1	        MOV PLYY2,AX
-				   DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
- 0668  33 DB		     1	        XOR BX,BX
- 066A  33 C9		     1	        XOR CX,CX
- 066C  33 D2		     1	        XOR DX,DX
- 066E  B4 0C		     1	        MOV AH,0CH
- 0670  A0 0020 R	     1	        MOV AL,WHITE
- 0673  8B 16 0054 R	     1	        MOV DX,PLYY1
- 0677  8B 0E 0052 R	     1	        MOV CX,PLYX1
- 067B			     1	        ??0034:
- 067B  8B 0E 0052 R	     1	            MOV CX,PLYX1
- 067F  CD 10		     1	            ??0035:INT 10H
- 0681  41		     1	                INC CX
- 0682  3B 0E 0056 R	     1	                CMP CX,PLYX2
- 0686  72 F7		     1	                JB ??0035
- 0688  42		     1	            INC DX
- 0689  3B 16 0058 R	     1	            CMP DX,PLYY2
- 068D  72 EC		     1	            JB ??0034
-				   DRAWLEVEL3
- 068F  33 DB		     2	        XOR BX,BX
- 0691  33 C9		     2	        XOR CX,CX
- 0693  33 D2		     2	        XOR DX,DX
- 0695  B4 0C		     2	        MOV AH,0CH
- 0697  A0 001E R	     2	        MOV AL,BLUE
- 069A  BA 0064		     2	        MOV DX,100
- 069D  B9 0050		     2	        MOV CX,80
- 06A0			     2	        ??0036:
- 06A0  B9 0050		     2	            MOV CX,80
- 06A3  CD 10		     2	            ??0037:INT 10H
- 06A5  41		     2	                INC CX
- 06A6  81 F9 0258	     2	                CMP CX,600
- 06AA  72 F7		     2	                JB ??0037
- 06AC  42		     2	            INC DX
- 06AD  83 FA 6E		     2	            CMP DX,110
- 06B0  72 EE		     2	            JB ??0036
- 06B2  33 DB		     2	        XOR BX,BX
- 06B4  33 C9		     2	        XOR CX,CX
- 06B6  33 D2		     2	        XOR DX,DX
- 06B8  B4 0C		     2	        MOV AH,0CH
- 06BA  A0 001E R	     2	        MOV AL,BLUE
- 06BD  BA 00DC		     2	        MOV DX,220
- 06C0  B9 0050		     2	        MOV CX,80
- 06C3			     2	        ??0038:
- 06C3  B9 0050		     2	            MOV CX,80
- 06C6  CD 10		     2	            ??0039:INT 10H
- 06C8  41		     2	                INC CX
- 06C9  81 F9 0258	     2	                CMP CX,600
- 06CD  72 F7		     2	                JB ??0039
- 06CF  42		     2	            INC DX
- 06D0  81 FA 00E6	     2	            CMP DX,230
- 06D4  72 ED		     2	            JB ??0038
- 06D6  33 DB		     2	        XOR BX,BX
- 06D8  33 C9		     2	        XOR CX,CX
- 06DA  33 D2		     2	        XOR DX,DX
- 06DC  B4 0C		     2	        MOV AH,0CH
- 06DE  A0 001F R	     2	        MOV AL,RED
- 06E1  BA 006E		     2	        MOV DX,110
- 06E4  B9 024E		     2	        MOV CX,590
- 06E7			     2	        ??003A:
- 06E7  B9 024E		     2	            MOV CX,590
- 06EA  CD 10		     2	            ??003B:INT 10H
- 06EC  41		     2	                INC CX
- 06ED  81 F9 0258	     2	                CMP CX,600
- 06F1  72 F7		     2	                JB ??003B
- 06F3  42		     2	            INC DX
- 06F4  81 FA 00DC	     2	            CMP DX,220
- 06F8  72 ED		     2	            JB ??003A
- 06FA  B4 00		     3	      MOV AH,0             ;读时钟计数器值
- 06FC  CD 1A		     3	      INT 1AH
- 06FE  8B C2		     3	      MOV AX,DX            
- 0700  80 E4 03		     3	      AND AH,3
- 0703  B2 15		     3	      MOV DL,21          ;做除法,余数为随机数
- 0705  F6 F2		     3	      DIV DL
- 0707  33 DB		     3	      XOR BX,BX
- 0709  8A DC		     3	      MOV BL,AH
- 070B  89 1E 0022 R	     3	      MOV DELTX1,BX
- 070F  B4 00		     3	      MOV AH,0             ;读时钟计数器值
- 0711  CD 1A		     3	      INT 1AH
- 0713  8B C2		     3	      MOV AX,DX            
- 0715  80 E4 03		     3	      AND AH,3
- 0718  B2 1A		     3	      MOV DL,26           ;做除法,余数为随机数
- 071A  F6 F2		     3	      DIV DL
- 071C  33 DB		     3	      XOR BX,BX
- 071E  8A DC		     3	      MOV BL,AH
- 0720  89 1E 0026 R	     3	      MOV DELTX2,BX
- 0724  B4 00		     3	      MOV AH,0             ;读时钟计数器值
- 0726  CD 1A		     3	      INT 1AH
- 0728  8B C2		     3	      MOV AX,DX            
- 072A  80 E4 03		     3	      AND AH,3
- 072D  B2 0B		     3	      MOV DL,11          ;做除法,余数为随机数
- 072F  F6 F2		     3	      DIV DL
- 0731  33 DB		     3	      XOR BX,BX
- 0733  8A DC		     3	      MOV BL,AH
- 0735  89 1E 0024 R	     3	      MOV DELTY1,BX   
- 0739  B4 00		     3	      MOV AH,0             ;读时钟计数器值
- 073B  CD 1A		     3	      INT 1AH
- 073D  8B C2		     3	      MOV AX,DX            
- 073F  80 E4 03		     3	      AND AH,3
- 0742  B2 10		     3	      MOV DL,16           ;做除法,余数为随机数
- 0744  F6 F2		     3	      DIV DL
- 0746  33 DB		     3	      XOR BX,BX
- 0748  8A DC		     3	      MOV BL,AH
- 074A  89 1E 0028 R	     3	      MOV DELTY2,BX                  
- 074E  33 F6		     2	        XOR SI,SI
- 0750			     2	        NEXTBARRIER:
- 0750  A1 0022 R	     2	        MOV AX,DELTX1
- 0753  03 84 002A R	     2	        ADD AX,POSX1[SI]
- 0757  89 84 002A R	     2	        MOV POSX1[SI],AX
- 075B  A1 0024 R	     2	        MOV AX,DELTY1
- 075E  03 84 0034 R	     2	        ADD AX,POSY1[SI]
- 0762  89 84 0034 R	     2	        MOV POSY1[SI],AX
- 0766  A1 0026 R	     2	        MOV AX,DELTX2
- 0769  03 84 003E R	     2	        ADD AX,POSX2[SI]
- 076D  89 84 003E R	     2	        MOV POSX2[SI],AX
- 0771  A1 0028 R	     2	        MOV AX,DELTY2
- 0774  03 84 0048 R	     2	        ADD AX,POSY2[SI]
- 0778  89 84 0048 R	     2	        MOV POSY2[SI],AX
- 077C  33 DB		     3	        XOR BX,BX
- 077E  33 C9		     3	        XOR CX,CX
- 0780  33 D2		     3	        XOR DX,DX
- 0782  B4 0C		     3	        MOV AH,0CH
- 0784  A0 001E R	     3	        MOV AL,BLUE
- 0787  8B 94 0034 R	     3	        MOV DX,POSY1[SI]
- 078B  8B 8C 002A R	     3	        MOV CX,POSX1[SI]
- 078F			     3	        ??003D:
- 078F  8B 8C 002A R	     3	            MOV CX,POSX1[SI]
- 0793  CD 10		     3	            ??003E:INT 10H
- 0795  41		     3	                INC CX
- 0796  3B 8C 003E R	     3	                CMP CX,POSX2[SI]
- 079A  72 F7		     3	                JB ??003E
- 079C  42		     3	            INC DX
- 079D  3B 94 0048 R	     3	            CMP DX,POSY2[SI]
- 07A1  72 EC		     3	            JB ??003D
- 07A3  46		     2	        INC SI
- 07A4  46		     2	        INC SI
- 07A5  83 FE 0A		     2	        CMP SI,10
- 07A8  72 A6		     2	        JB NEXTBARRIER 
- 07AA  C3			   RET
- 07AB				  INITLEVEL3 ENDP
+				    ;画开始页面
+ 03BA				    DRAWSTART PROC
+				        SVRGI
+ 03BA  50		     1	        PUSH AX
+ 03BB  53		     1	        PUSH BX
+ 03BC  51		     1	        PUSH CX
+ 03BD  52		     1	        PUSH DX
+				        WRITESTARTOPTION NGAME,8
+ 03BE  B7 00		     1	        MOV BH,0
+ 03C0  B6 08		     1	        MOV DH,8
+ 03C2  B2 1C		     1	        MOV DL,28
+ 03C4  B4 02		     1	        MOV AH,2
+ 03C6  CD 10		     1	        INT 10H
+ 03C8  8D 16 0000 R	     1	        LEA DX,NGAME
+ 03CC  B4 09		     1	        MOV AH,9
+ 03CE  CD 21		     1	        INT 21H
+				        WRITESTARTOPTION LGAME,11
+ 03D0  B7 00		     1	        MOV BH,0
+ 03D2  B6 0B		     1	        MOV DH,11
+ 03D4  B2 1C		     1	        MOV DL,28
+ 03D6  B4 02		     1	        MOV AH,2
+ 03D8  CD 10		     1	        INT 10H
+ 03DA  8D 16 000B R	     1	        LEA DX,LGAME
+ 03DE  B4 09		     1	        MOV AH,9
+ 03E0  CD 21		     1	        INT 21H
+				        WRITESTARTOPTION EGAME,14
+ 03E2  B7 00		     1	        MOV BH,0
+ 03E4  B6 0E		     1	        MOV DH,14
+ 03E6  B2 1C		     1	        MOV DL,28
+ 03E8  B4 02		     1	        MOV AH,2
+ 03EA  CD 10		     1	        INT 10H
+ 03EC  8D 16 0017 R	     1	        LEA DX,EGAME
+ 03F0  B4 09		     1	        MOV AH,9
+ 03F2  CD 21		     1	        INT 21H
+				        LDRGI
+ 03F4  58		     1	        POP AX
+ 03F5  5B		     1	        POP BX
+ 03F6  59		     1	        POP CX
+ 03F7  5A		     1	        POP DX
+ 03F8  C3			        RET
+ 03F9				    DRAWSTART ENDP
 				  
- 07AB				  PLYOPERATE PROC
-				  	PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
- 07AB  B4 07		     1	        MOV AH,7
- 07AD  CD 21		     1	        INT 21H
- 07AF  50		     1	        PUSH AX     
- 07B0  33 DB		     2	        XOR BX,BX
- 07B2  33 C9		     2	        XOR CX,CX
- 07B4  33 D2		     2	        XOR DX,DX
- 07B6  B4 0C		     2	        MOV AH,0CH
- 07B8  A0 0021 R	     2	        MOV AL,BLACK
- 07BB  8B 16 0054 R	     2	        MOV DX,PLYY1
- 07BF  8B 0E 0052 R	     2	        MOV CX,PLYX1
- 07C3			     2	        ??0044:
- 07C3  8B 0E 0052 R	     2	            MOV CX,PLYX1
- 07C7  CD 10		     2	            ??0045:INT 10H
- 07C9  41		     2	                INC CX
- 07CA  3B 0E 0056 R	     2	                CMP CX,PLYX2
- 07CE  72 F7		     2	                JB ??0045
- 07D0  42		     2	            INC DX
- 07D1  3B 16 0058 R	     2	            CMP DX,PLYY2
- 07D5  72 EC		     2	            JB ??0044
- 07D7  58		     1	        POP AX
- 07D8  3C 77		     1	        CMP AL,'w'
- 07DA  74 0E		     1	        JZ ??003F
- 07DC  3C 61		     1	        CMP AL,'a'
- 07DE  74 3A		     1	        JZ ??0041
- 07E0  3C 73		     1	        CMP AL,'s'
- 07E2  74 1E		     1	        JZ ??0040
- 07E4  3C 64		     1	        CMP AL,'d'
- 07E6  74 4A		     1	        JZ ??0042
- 07E8  EB 60		     1	        JMP ??0043
- 07EA			     1	        ??003F:
- 07EA  8B 0E 0054 R	     2	        MOV CX,PLYY1
- 07EE  8B 16 0058 R	     2	        MOV DX,PLYY2
- 07F2  83 E9 05		     2	        SUB CX,5
- 07F5  83 EA 05		     2	        SUB DX,5
- 07F8  89 0E 0054 R	     2	        MOV PLYY1,CX
- 07FC  89 16 0058 R	     2	        MOV PLYY2,DX
- 0800  EB 48		     1	        JMP ??0043
- 0802			     1	        ??0040:
- 0802  8B 0E 0054 R	     2	        MOV CX,PLYY1
- 0806  8B 16 0058 R	     2	        MOV DX,PLYY2
- 080A  83 C1 05		     2	        ADD CX,5
- 080D  83 C2 05		     2	        ADD DX,5
- 0810  89 0E 0054 R	     2	        MOV PLYY1,CX
- 0814  89 16 0058 R	     2	        MOV PLYY2,DX
- 0818  EB 30		     1	        JMP ??0043
- 081A			     1	        ??0041:
- 081A  8B 0E 0052 R	     2	        MOV CX,PLYX1
- 081E  8B 16 0056 R	     2	        MOV DX,PLYX2
- 0822  83 E9 05		     2	        SUB CX,5
- 0825  83 EA 05		     2	        SUB DX,5
- 0828  89 0E 0052 R	     2	        MOV PLYX1,CX
- 082C  89 16 0056 R	     2	        MOV PLYX2,DX
- 0830  EB 18		     1	        JMP ??0043
- 0832			     1	        ??0042:
- 0832  8B 0E 0052 R	     2	        MOV CX,PLYX1
- 0836  8B 16 0056 R	     2	        MOV DX,PLYX2
- 083A  83 C1 05		     2	        ADD CX,5
- 083D  83 C2 05		     2	        ADD DX,5
- 0840  89 0E 0052 R	     2	        MOV PLYX1,CX
- 0844  89 16 0056 R	     2	        MOV PLYX2,DX
- 0848  EB 00		     1	        JMP ??0043
- 084A			     1	        ??0043:
- 084A  33 DB		     2	        XOR BX,BX
- 084C  33 C9		     2	        XOR CX,CX
- 084E  33 D2		     2	        XOR DX,DX
- 0850  B4 0C		     2	        MOV AH,0CH
- 0852  A0 0020 R	     2	        MOV AL,WHITE
- 0855  8B 16 0054 R	     2	        MOV DX,PLYY1
- 0859  8B 0E 0052 R	     2	        MOV CX,PLYX1
- 085D			     2	        ??0046:
- 085D  8B 0E 0052 R	     2	            MOV CX,PLYX1
- 0861  CD 10		     2	            ??0047:INT 10H
- 0863  41		     2	                INC CX
- 0864  3B 0E 0056 R	     2	                CMP CX,PLYX2
- 0868  72 F7		     2	                JB ??0047
- 086A  42		     2	            INC DX
- 086B  3B 16 0058 R	     2	            CMP DX,PLYY2
- 086F  72 EC		     2	            JB ??0046
- 0871  C3			  	RET
- 0872				  PLYOPERATE ENDP
+				  ;初始化开始界面 
+ 03F9				  INITSTARTPAGE PROC
+ 03F9  E8 FF52				  	CALL WORDSHOW
+ 03FC  E8 FF9E				    CALL DRAWBORDER
+ 03FF  E8 FFB8				    CALL DRAWSTART
+ 0402  C3				    RET
+ 0403				  INITSTARTPAGE ENDP
+				  
+				  
+				    ;绘制第一关
+ 0403				    DRAWLEVEL1 PROC
+				        DRAWRECT 100,60,500,70,BLUE
+ 0403  33 DB		     1	        XOR BX,BX
+ 0405  33 C9		     1	        XOR CX,CX
+ 0407  33 D2		     1	        XOR DX,DX
+ 0409  B4 0C		     1	        MOV AH,0CH
+ 040B  A0 001E R	     1	        MOV AL,BLUE
+ 040E  BA 003C		     1	        MOV DX,60
+ 0411  B9 0064		     1	        MOV CX,100
+ 0414			     1	        ??0015:
+ 0414  B9 0064		     1	        MOV CX,100
+ 0417  CD 10		     1	        ??0016:INT 10H
+ 0419  41		     1	        INC CX
+ 041A  81 F9 01F4	     1	        CMP CX,500
+ 041E  72 F7		     1	        JB ??0016
+ 0420  42		     1	        INC DX
+ 0421  83 FA 46		     1	        CMP DX,70
+ 0424  72 EE		     1	        JB ??0015
+				        DRAWRECT 100,120,450,130,BLUE
+ 0426  33 DB		     1	        XOR BX,BX
+ 0428  33 C9		     1	        XOR CX,CX
+ 042A  33 D2		     1	        XOR DX,DX
+ 042C  B4 0C		     1	        MOV AH,0CH
+ 042E  A0 001E R	     1	        MOV AL,BLUE
+ 0431  BA 0078		     1	        MOV DX,120
+ 0434  B9 0064		     1	        MOV CX,100
+ 0437			     1	        ??0017:
+ 0437  B9 0064		     1	        MOV CX,100
+ 043A  CD 10		     1	        ??0018:INT 10H
+ 043C  41		     1	        INC CX
+ 043D  81 F9 01C2	     1	        CMP CX,450
+ 0441  72 F7		     1	        JB ??0018
+ 0443  42		     1	        INC DX
+ 0444  81 FA 0082	     1	        CMP DX,130
+ 0448  72 ED		     1	        JB ??0017
+				        DRAWRECT 450,120,460,250,BLUE
+ 044A  33 DB		     1	        XOR BX,BX
+ 044C  33 C9		     1	        XOR CX,CX
+ 044E  33 D2		     1	        XOR DX,DX
+ 0450  B4 0C		     1	        MOV AH,0CH
+ 0452  A0 001E R	     1	        MOV AL,BLUE
+ 0455  BA 0078		     1	        MOV DX,120
+ 0458  B9 01C2		     1	        MOV CX,450
+ 045B			     1	        ??0019:
+ 045B  B9 01C2		     1	        MOV CX,450
+ 045E  CD 10		     1	        ??001A:INT 10H
+ 0460  41		     1	        INC CX
+ 0461  81 F9 01CC	     1	        CMP CX,460
+ 0465  72 F7		     1	        JB ??001A
+ 0467  42		     1	        INC DX
+ 0468  81 FA 00FA	     1	        CMP DX,250
+ 046C  72 ED		     1	        JB ??0019
+				        DRAWRECT 500,60,510,250,BLUE
+ 046E  33 DB		     1	        XOR BX,BX
+ 0470  33 C9		     1	        XOR CX,CX
+ 0472  33 D2		     1	        XOR DX,DX
+ 0474  B4 0C		     1	        MOV AH,0CH
+ 0476  A0 001E R	     1	        MOV AL,BLUE
+ 0479  BA 003C		     1	        MOV DX,60
+ 047C  B9 01F4		     1	        MOV CX,500
+ 047F			     1	        ??001B:
+ 047F  B9 01F4		     1	        MOV CX,500
+ 0482  CD 10		     1	        ??001C:INT 10H
+ 0484  41		     1	        INC CX
+ 0485  81 F9 01FE	     1	        CMP CX,510
+ 0489  72 F7		     1	        JB ??001C
+ 048B  42		     1	        INC DX
+ 048C  81 FA 00FA	     1	        CMP DX,250
+ 0490  72 ED		     1	        JB ??001B
+				        DRAWRECT 460,240,500,250,RED
+ 0492  33 DB		     1	        XOR BX,BX
+ 0494  33 C9		     1	        XOR CX,CX
+ 0496  33 D2		     1	        XOR DX,DX
+ 0498  B4 0C		     1	        MOV AH,0CH
+ 049A  A0 001F R	     1	        MOV AL,RED
+ 049D  BA 00F0		     1	        MOV DX,240
+ 04A0  B9 01CC		     1	        MOV CX,460
+ 04A3			     1	        ??001D:
+ 04A3  B9 01CC		     1	        MOV CX,460
+ 04A6  CD 10		     1	        ??001E:INT 10H
+ 04A8  41		     1	        INC CX
+ 04A9  81 F9 01F4	     1	        CMP CX,500
+ 04AD  72 F7		     1	        JB ??001E
+ 04AF  42		     1	        INC DX
+ 04B0  81 FA 00FA	     1	        CMP DX,250
+ 04B4  72 ED		     1	        JB ??001D
+ 04B6  C3			        RET
+ 04B7				   	DRAWLEVEL1 ENDP
+				    
+ 04B7					INITLEVEL1 PROC
+ 04B7  E8 FE8D				  	CALL COLORSHOW
+ 04BA  E8 0396				  	CALL CLEAN
+ 04BD  E8 0414				  	CALL SETPOSL1;方块位置放到第一关开始位置
+					  	DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE  
+ 04C0  33 DB		     1	        XOR BX,BX
+ 04C2  33 C9		     1	        XOR CX,CX
+ 04C4  33 D2		     1	        XOR DX,DX
+ 04C6  B4 0C		     1	        MOV AH,0CH
+ 04C8  A0 0020 R	     1	        MOV AL,WHITE
+ 04CB  8B 16 0054 R	     1	        MOV DX,PLYY1
+ 04CF  8B 0E 0052 R	     1	        MOV CX,PLYX1
+ 04D3			     1	        ??001F:
+ 04D3  8B 0E 0052 R	     1	        MOV CX,PLYX1
+ 04D7  CD 10		     1	        ??0020:INT 10H
+ 04D9  41		     1	        INC CX
+ 04DA  3B 0E 0056 R	     1	        CMP CX,PLYX2
+ 04DE  72 F7		     1	        JB ??0020
+ 04E0  42		     1	        INC DX
+ 04E1  3B 16 0058 R	     1	        CMP DX,PLYY2
+ 04E5  72 EC		     1	        JB ??001F
+ 04E7  E8 FF19				  	CALL DRAWLEVEL1
+ 04EA  C3				  	RET
+ 04EB					 INITLEVEL1 ENDP
+				  
+				    ;绘制第二关
+ 04EB				    DRAWLEVEL2 PROC
+				        DRAWRECT 100,60,500,70,BLUE
+ 04EB  33 DB		     1	        XOR BX,BX
+ 04ED  33 C9		     1	        XOR CX,CX
+ 04EF  33 D2		     1	        XOR DX,DX
+ 04F1  B4 0C		     1	        MOV AH,0CH
+ 04F3  A0 001E R	     1	        MOV AL,BLUE
+ 04F6  BA 003C		     1	        MOV DX,60
+ 04F9  B9 0064		     1	        MOV CX,100
+ 04FC			     1	        ??0021:
+ 04FC  B9 0064		     1	        MOV CX,100
+ 04FF  CD 10		     1	        ??0022:INT 10H
+ 0501  41		     1	        INC CX
+ 0502  81 F9 01F4	     1	        CMP CX,500
+ 0506  72 F7		     1	        JB ??0022
+ 0508  42		     1	        INC DX
+ 0509  83 FA 46		     1	        CMP DX,70
+ 050C  72 EE		     1	        JB ??0021
+				        DRAWRECT 100,120,450,130,BLUE
+ 050E  33 DB		     1	        XOR BX,BX
+ 0510  33 C9		     1	        XOR CX,CX
+ 0512  33 D2		     1	        XOR DX,DX
+ 0514  B4 0C		     1	        MOV AH,0CH
+ 0516  A0 001E R	     1	        MOV AL,BLUE
+ 0519  BA 0078		     1	        MOV DX,120
+ 051C  B9 0064		     1	        MOV CX,100
+ 051F			     1	        ??0023:
+ 051F  B9 0064		     1	        MOV CX,100
+ 0522  CD 10		     1	        ??0024:INT 10H
+ 0524  41		     1	        INC CX
+ 0525  81 F9 01C2	     1	        CMP CX,450
+ 0529  72 F7		     1	        JB ??0024
+ 052B  42		     1	        INC DX
+ 052C  81 FA 0082	     1	        CMP DX,130
+ 0530  72 ED		     1	        JB ??0023
+				        DRAWRECT 450,120,460,240,BLUE
+ 0532  33 DB		     1	        XOR BX,BX
+ 0534  33 C9		     1	        XOR CX,CX
+ 0536  33 D2		     1	        XOR DX,DX
+ 0538  B4 0C		     1	        MOV AH,0CH
+ 053A  A0 001E R	     1	        MOV AL,BLUE
+ 053D  BA 0078		     1	        MOV DX,120
+ 0540  B9 01C2		     1	        MOV CX,450
+ 0543			     1	        ??0025:
+ 0543  B9 01C2		     1	        MOV CX,450
+ 0546  CD 10		     1	        ??0026:INT 10H
+ 0548  41		     1	        INC CX
+ 0549  81 F9 01CC	     1	        CMP CX,460
+ 054D  72 F7		     1	        JB ??0026
+ 054F  42		     1	        INC DX
+ 0550  81 FA 00F0	     1	        CMP DX,240
+ 0554  72 ED		     1	        JB ??0025
+				        DRAWRECT 500,60,510,280,BLUE
+ 0556  33 DB		     1	        XOR BX,BX
+ 0558  33 C9		     1	        XOR CX,CX
+ 055A  33 D2		     1	        XOR DX,DX
+ 055C  B4 0C		     1	        MOV AH,0CH
+ 055E  A0 001E R	     1	        MOV AL,BLUE
+ 0561  BA 003C		     1	        MOV DX,60
+ 0564  B9 01F4		     1	        MOV CX,500
+ 0567			     1	        ??0027:
+ 0567  B9 01F4		     1	        MOV CX,500
+ 056A  CD 10		     1	        ??0028:INT 10H
+ 056C  41		     1	        INC CX
+ 056D  81 F9 01FE	     1	        CMP CX,510
+ 0571  72 F7		     1	        JB ??0028
+ 0573  42		     1	        INC DX
+ 0574  81 FA 0118	     1	        CMP DX,280
+ 0578  72 ED		     1	        JB ??0027
+				        DRAWRECT 300,240,460,250,BLUE
+ 057A  33 DB		     1	        XOR BX,BX
+ 057C  33 C9		     1	        XOR CX,CX
+ 057E  33 D2		     1	        XOR DX,DX
+ 0580  B4 0C		     1	        MOV AH,0CH
+ 0582  A0 001E R	     1	        MOV AL,BLUE
+ 0585  BA 00F0		     1	        MOV DX,240
+ 0588  B9 012C		     1	        MOV CX,300
+ 058B			     1	        ??0029:
+ 058B  B9 012C		     1	        MOV CX,300
+ 058E  CD 10		     1	        ??002A:INT 10H
+ 0590  41		     1	        INC CX
+ 0591  81 F9 01CC	     1	        CMP CX,460
+ 0595  72 F7		     1	        JB ??002A
+ 0597  42		     1	        INC DX
+ 0598  81 FA 00FA	     1	        CMP DX,250
+ 059C  72 ED		     1	        JB ??0029
+				        DRAWRECT 300,280,510,290,BLUE
+ 059E  33 DB		     1	        XOR BX,BX
+ 05A0  33 C9		     1	        XOR CX,CX
+ 05A2  33 D2		     1	        XOR DX,DX
+ 05A4  B4 0C		     1	        MOV AH,0CH
+ 05A6  A0 001E R	     1	        MOV AL,BLUE
+ 05A9  BA 0118		     1	        MOV DX,280
+ 05AC  B9 012C		     1	        MOV CX,300
+ 05AF			     1	        ??002B:
+ 05AF  B9 012C		     1	        MOV CX,300
+ 05B2  CD 10		     1	        ??002C:INT 10H
+ 05B4  41		     1	        INC CX
+ 05B5  81 F9 01FE	     1	        CMP CX,510
+ 05B9  72 F7		     1	        JB ??002C
+ 05BB  42		     1	        INC DX
+ 05BC  81 FA 0122	     1	        CMP DX,290
+ 05C0  72 ED		     1	        JB ??002B
+				        DRAWRECT 300,250,310,280,RED
+ 05C2  33 DB		     1	        XOR BX,BX
+ 05C4  33 C9		     1	        XOR CX,CX
+ 05C6  33 D2		     1	        XOR DX,DX
+ 05C8  B4 0C		     1	        MOV AH,0CH
+ 05CA  A0 001F R	     1	        MOV AL,RED
+ 05CD  BA 00FA		     1	        MOV DX,250
+ 05D0  B9 012C		     1	        MOV CX,300
+ 05D3			     1	        ??002D:
+ 05D3  B9 012C		     1	        MOV CX,300
+ 05D6  CD 10		     1	        ??002E:INT 10H
+ 05D8  41		     1	        INC CX
+ 05D9  81 F9 0136	     1	        CMP CX,310
+ 05DD  72 F7		     1	        JB ??002E
+ 05DF  42		     1	        INC DX
+ 05E0  81 FA 0118	     1	        CMP DX,280
+ 05E4  72 ED		     1	        JB ??002D
+ 05E6  C3			        RET
+ 05E7				    DRAWLEVEL2 ENDP
+				    
+				    
+				    ;加载随机障碍,算法为获取随机数种子
+				    ;产生四个随机数,作为障碍物的偏移
+				    ;偏移施加到点的原始值
+ 05E7				    LOADBARRIER PROC
+				        LOCAL NEXTPOINT
+				        RANNUM DELTX1,DELTX2,DELTY1,DELTY2
+ 05ED  B4 00		     1	      MOV AH,0             ;读时钟计数器值
+ 05EF  CD 1A		     1	      INT 1AH
+ 05F1  8B C2		     1	      MOV AX,DX            
+ 05F3  80 E4 03		     1	      AND AH,3
+ 05F6  B2 15		     1	      MOV DL,21          ;做除法,余数为随机数
+ 05F8  F6 F2		     1	      DIV DL
+ 05FA  33 DB		     1	      XOR BX,BX
+ 05FC  8A DC		     1	      MOV BL,AH
+ 05FE  89 1E 0022 R	     1	      MOV DELTX1,BX
+ 0602  B4 00		     1	      MOV AH,0             ;读时钟计数器值
+ 0604  CD 1A		     1	      INT 1AH
+ 0606  8B C2		     1	      MOV AX,DX            
+ 0608  80 E4 03		     1	      AND AH,3
+ 060B  B2 1A		     1	      MOV DL,26           ;做除法,余数为随机数
+ 060D  F6 F2		     1	      DIV DL
+ 060F  33 DB		     1	      XOR BX,BX
+ 0611  8A DC		     1	      MOV BL,AH
+ 0613  89 1E 0026 R	     1	      MOV DELTX2,BX
+ 0617  B4 00		     1	      MOV AH,0             ;读时钟计数器值
+ 0619  CD 1A		     1	      INT 1AH
+ 061B  8B C2		     1	      MOV AX,DX            
+ 061D  80 E4 03		     1	      AND AH,3
+ 0620  B2 0B		     1	      MOV DL,11          ;做除法,余数为随机数
+ 0622  F6 F2		     1	      DIV DL
+ 0624  33 DB		     1	      XOR BX,BX
+ 0626  8A DC		     1	      MOV BL,AH
+ 0628  89 1E 0024 R	     1	      MOV DELTY1,BX   
+ 062C  B4 00		     1	      MOV AH,0             ;读时钟计数器值
+ 062E  CD 1A		     1	      INT 1AH
+ 0630  8B C2		     1	      MOV AX,DX            
+ 0632  80 E4 03		     1	      AND AH,3
+ 0635  B2 10		     1	      MOV DL,16           ;做除法,余数为随机数
+ 0637  F6 F2		     1	      DIV DL
+ 0639  33 DB		     1	      XOR BX,BX
+ 063B  8A DC		     1	      MOV BL,AH
+ 063D  89 1E 0028 R	     1	      MOV DELTY2,BX                  
+ 0641  33 F6			        XOR SI,SI
+				        
+ 0643				        NEXTBARRIER:
+ 0643  A1 0022 R		        MOV AX,DELTX1
+ 0646  03 84 002A R		        ADD AX,POSX1[SI]
+ 064A  89 84 002A R		        MOV POSX1[SI],AX
+ 064E  A1 0024 R		        MOV AX,DELTY1
+ 0651  03 84 0034 R		        ADD AX,POSY1[SI]
+ 0655  89 84 0034 R		        MOV POSY1[SI],AX
+ 0659  A1 0026 R		        MOV AX,DELTX2
+ 065C  03 84 003E R		        ADD AX,POSX2[SI]
+ 0660  89 84 003E R		        MOV POSX2[SI],AX
+ 0664  A1 0028 R		        MOV AX,DELTY2
+ 0667  03 84 0048 R		        ADD AX,POSY2[SI]
+ 066B  89 84 0048 R		        MOV POSY2[SI],AX
+				        
+				        
+				        DRAWRECT POSX1[SI],POSY1[SI],POSX2[SI],POSY2[SI],BLUE
+ 066F  33 DB		     1	        XOR BX,BX
+ 0671  33 C9		     1	        XOR CX,CX
+ 0673  33 D2		     1	        XOR DX,DX
+ 0675  B4 0C		     1	        MOV AH,0CH
+ 0677  A0 001E R	     1	        MOV AL,BLUE
+ 067A  8B 94 0034 R	     1	        MOV DX,POSY1[SI]
+ 067E  8B 8C 002A R	     1	        MOV CX,POSX1[SI]
+ 0682			     1	        ??002F:
+ 0682  8B 8C 002A R	     1	        MOV CX,POSX1[SI]
+ 0686  CD 10		     1	        ??0030:INT 10H
+ 0688  41		     1	        INC CX
+ 0689  3B 8C 003E R	     1	        CMP CX,POSX2[SI]
+ 068D  72 F7		     1	        JB ??0030
+ 068F  42		     1	        INC DX
+ 0690  3B 94 0048 R	     1	        CMP DX,POSY2[SI]
+ 0694  72 EC		     1	        JB ??002F
+ 0696  46			        INC SI
+ 0697  46			        INC SI
+ 0698  83 FE 0A			        CMP SI,10
+ 069B  72 A6			        JB NEXTBARRIER
+				        RET 
+ 06A1				    LOADBARRIER ENDP
+				    
+				    ;第三关,平行线内随机生成障碍
+ 06A1				    DRAWLEVEL3 PROC
+				        ;先绘制边框,后生成随机障碍物
+				        DRAWRECT 80,100,600,110,BLUE
+ 06A1  33 DB		     1	        XOR BX,BX
+ 06A3  33 C9		     1	        XOR CX,CX
+ 06A5  33 D2		     1	        XOR DX,DX
+ 06A7  B4 0C		     1	        MOV AH,0CH
+ 06A9  A0 001E R	     1	        MOV AL,BLUE
+ 06AC  BA 0064		     1	        MOV DX,100
+ 06AF  B9 0050		     1	        MOV CX,80
+ 06B2			     1	        ??0031:
+ 06B2  B9 0050		     1	        MOV CX,80
+ 06B5  CD 10		     1	        ??0032:INT 10H
+ 06B7  41		     1	        INC CX
+ 06B8  81 F9 0258	     1	        CMP CX,600
+ 06BC  72 F7		     1	        JB ??0032
+ 06BE  42		     1	        INC DX
+ 06BF  83 FA 6E		     1	        CMP DX,110
+ 06C2  72 EE		     1	        JB ??0031
+				        DRAWRECT 80,220,600,230,BLUE
+ 06C4  33 DB		     1	        XOR BX,BX
+ 06C6  33 C9		     1	        XOR CX,CX
+ 06C8  33 D2		     1	        XOR DX,DX
+ 06CA  B4 0C		     1	        MOV AH,0CH
+ 06CC  A0 001E R	     1	        MOV AL,BLUE
+ 06CF  BA 00DC		     1	        MOV DX,220
+ 06D2  B9 0050		     1	        MOV CX,80
+ 06D5			     1	        ??0033:
+ 06D5  B9 0050		     1	        MOV CX,80
+ 06D8  CD 10		     1	        ??0034:INT 10H
+ 06DA  41		     1	        INC CX
+ 06DB  81 F9 0258	     1	        CMP CX,600
+ 06DF  72 F7		     1	        JB ??0034
+ 06E1  42		     1	        INC DX
+ 06E2  81 FA 00E6	     1	        CMP DX,230
+ 06E6  72 ED		     1	        JB ??0033
+				        DRAWRECT 590,110,600,220,RED
+ 06E8  33 DB		     1	        XOR BX,BX
+ 06EA  33 C9		     1	        XOR CX,CX
+ 06EC  33 D2		     1	        XOR DX,DX
+ 06EE  B4 0C		     1	        MOV AH,0CH
+ 06F0  A0 001F R	     1	        MOV AL,RED
+ 06F3  BA 006E		     1	        MOV DX,110
+ 06F6  B9 024E		     1	        MOV CX,590
+ 06F9			     1	        ??0035:
+ 06F9  B9 024E		     1	        MOV CX,590
+ 06FC  CD 10		     1	        ??0036:INT 10H
+ 06FE  41		     1	        INC CX
+ 06FF  81 F9 0258	     1	        CMP CX,600
+ 0703  72 F7		     1	        JB ??0036
+ 0705  42		     1	        INC DX
+ 0706  81 FA 00DC	     1	        CMP DX,220
+ 070A  72 ED		     1	        JB ??0035
+ 070C  E8 FED8			        CALL LOADBARRIER
+ 070F  C3			        RET
+ 0710				    DRAWLEVEL3 ENDP
+				      
+ 0710				  INITLEVEL2 PROC
+ 0710  E8 FC34				    CALL COLORSHOW
+ 0713  E8 013D				    CALL CLEAN
+ 0716  E8 01D4				    CALL SETPOSL2;方块位置放到第二关开始位置
+					    DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
+ 0719  33 DB		     1	        XOR BX,BX
+ 071B  33 C9		     1	        XOR CX,CX
+ 071D  33 D2		     1	        XOR DX,DX
+ 071F  B4 0C		     1	        MOV AH,0CH
+ 0721  A0 0020 R	     1	        MOV AL,WHITE
+ 0724  8B 16 0054 R	     1	        MOV DX,PLYY1
+ 0728  8B 0E 0052 R	     1	        MOV CX,PLYX1
+ 072C			     1	        ??0037:
+ 072C  8B 0E 0052 R	     1	        MOV CX,PLYX1
+ 0730  CD 10		     1	        ??0038:INT 10H
+ 0732  41		     1	        INC CX
+ 0733  3B 0E 0056 R	     1	        CMP CX,PLYX2
+ 0737  72 F7		     1	        JB ??0038
+ 0739  42		     1	        INC DX
+ 073A  3B 16 0058 R	     1	        CMP DX,PLYY2
+ 073E  72 EC		     1	        JB ??0037
+ 0740  E8 FDA8				    CALL DRAWLEVEL2
+ 0743  C3				    RET
+ 0744				  INITLEVEL2 ENDP
+				  
+ 0744				  INITLEVEL3 PROC
+ 0744  E8 FC00				    CALL COLORSHOW
+ 0747  E8 0109				    CALL CLEAN
+ 074A  E8 01B9				    CALL SETPOSL3;方块位置放到第三关开始位置
+					    DRAWRECT PLYX1,PLYY1,PLYX2,PLYY2,WHITE
+ 074D  33 DB		     1	        XOR BX,BX
+ 074F  33 C9		     1	        XOR CX,CX
+ 0751  33 D2		     1	        XOR DX,DX
+ 0753  B4 0C		     1	        MOV AH,0CH
+ 0755  A0 0020 R	     1	        MOV AL,WHITE
+ 0758  8B 16 0054 R	     1	        MOV DX,PLYY1
+ 075C  8B 0E 0052 R	     1	        MOV CX,PLYX1
+ 0760			     1	        ??0039:
+ 0760  8B 0E 0052 R	     1	        MOV CX,PLYX1
+ 0764  CD 10		     1	        ??003A:INT 10H
+ 0766  41		     1	        INC CX
+ 0767  3B 0E 0056 R	     1	        CMP CX,PLYX2
+ 076B  72 F7		     1	        JB ??003A
+ 076D  42		     1	        INC DX
+ 076E  3B 16 0058 R	     1	        CMP DX,PLYY2
+ 0772  72 EC		     1	        JB ??0039
+ 0774  E8 FF2A				    CALL DRAWLEVEL3
+ 0777  C3				    RET
+ 0778				  INITLEVEL3 ENDP
+				  
+ 0778				  PLYOPERATE PROC
+					  	PLYMOVE PLYX1,PLYY1,PLYX2,PLYY2
+ 0778  B4 07		     1	        MOV AH,7
+ 077A  CD 21		     1	        INT 21H
+ 077C  50		     1	        PUSH AX     
+ 077D  33 DB		     2	        XOR BX,BX
+ 077F  33 C9		     2	        XOR CX,CX
+ 0781  33 D2		     2	        XOR DX,DX
+ 0783  B4 0C		     2	        MOV AH,0CH
+ 0785  A0 0021 R	     2	        MOV AL,BLACK
+ 0788  8B 16 0054 R	     2	        MOV DX,PLYY1
+ 078C  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 0790			     2	        ??0040:
+ 0790  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 0794  CD 10		     2	        ??0041:INT 10H
+ 0796  41		     2	        INC CX
+ 0797  3B 0E 0056 R	     2	        CMP CX,PLYX2
+ 079B  72 F7		     2	        JB ??0041
+ 079D  42		     2	        INC DX
+ 079E  3B 16 0058 R	     2	        CMP DX,PLYY2
+ 07A2  72 EC		     2	        JB ??0040
+ 07A4  58		     1	        POP AX
+ 07A5  3C 77		     1	        CMP AL,'w'
+ 07A7  74 0E		     1	        JZ ??003B
+ 07A9  3C 61		     1	        CMP AL,'a'
+ 07AB  74 3A		     1	        JZ ??003D
+ 07AD  3C 73		     1	        CMP AL,'s'
+ 07AF  74 1E		     1	        JZ ??003C
+ 07B1  3C 64		     1	        CMP AL,'d'
+ 07B3  74 4A		     1	        JZ ??003E
+ 07B5  EB 60		     1	        JMP ??003F
+ 07B7			     1	        ??003B:
+ 07B7  8B 0E 0054 R	     2	        MOV CX,PLYY1
+ 07BB  8B 16 0058 R	     2	        MOV DX,PLYY2
+ 07BF  83 E9 05		     2	        SUB CX,5
+ 07C2  83 EA 05		     2	        SUB DX,5
+ 07C5  89 0E 0054 R	     2	        MOV PLYY1,CX
+ 07C9  89 16 0058 R	     2	        MOV PLYY2,DX
+ 07CD  EB 48		     1	        JMP ??003F
+ 07CF			     1	        ??003C:
+ 07CF  8B 0E 0054 R	     2	        MOV CX,PLYY1
+ 07D3  8B 16 0058 R	     2	        MOV DX,PLYY2
+ 07D7  83 C1 05		     2	        ADD CX,5
+ 07DA  83 C2 05		     2	        ADD DX,5
+ 07DD  89 0E 0054 R	     2	        MOV PLYY1,CX
+ 07E1  89 16 0058 R	     2	        MOV PLYY2,DX
+ 07E5  EB 30		     1	        JMP ??003F
+ 07E7			     1	        ??003D:
+ 07E7  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 07EB  8B 16 0056 R	     2	        MOV DX,PLYX2
+ 07EF  83 E9 05		     2	        SUB CX,5
+ 07F2  83 EA 05		     2	        SUB DX,5
+ 07F5  89 0E 0052 R	     2	        MOV PLYX1,CX
+ 07F9  89 16 0056 R	     2	        MOV PLYX2,DX
+ 07FD  EB 18		     1	        JMP ??003F
+ 07FF			     1	        ??003E:
+ 07FF  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 0803  8B 16 0056 R	     2	        MOV DX,PLYX2
+ 0807  83 C1 05		     2	        ADD CX,5
+ 080A  83 C2 05		     2	        ADD DX,5
+ 080D  89 0E 0052 R	     2	        MOV PLYX1,CX
+ 0811  89 16 0056 R	     2	        MOV PLYX2,DX
+ 0815  EB 00		     1	        JMP ??003F
+ 0817			     1	        ??003F:
+ 0817  33 DB		     2	        XOR BX,BX
+ 0819  33 C9		     2	        XOR CX,CX
+ 081B  33 D2		     2	        XOR DX,DX
+ 081D  B4 0C		     2	        MOV AH,0CH
+ 081F  A0 0020 R	     2	        MOV AL,WHITE
+ 0822  8B 16 0054 R	     2	        MOV DX,PLYY1
+ 0826  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 082A			     2	        ??0042:
+ 082A  8B 0E 0052 R	     2	        MOV CX,PLYX1
+ 082E  CD 10		     2	        ??0043:INT 10H
+ 0830  41		     2	        INC CX
+ 0831  3B 0E 0056 R	     2	        CMP CX,PLYX2
+ 0835  72 F7		     2	        JB ??0043
+ 0837  42		     2	        INC DX
+ 0838  3B 16 0058 R	     2	        CMP DX,PLYY2
+ 083C  72 EC		     2	        JB ??0042
+ 083E  C3				  	RET
+ 083F				  PLYOPERATE ENDP
 				  
 					;死亡场景
- 0872					DRAWDEADSCENCE PROC
+ 083F					DRAWDEADSCENCE PROC
 						;清屏
- 0872  E8 0423					CALL CLEAN
+ 083F  E8 0011					CALL CLEAN
 						;图形
-						DRAWDEADIMG
- 0875  33 DB		     2	        XOR BX,BX
- 0877  33 C9		     2	        XOR CX,CX
- 0879  33 D2		     2	        XOR DX,DX
- 087B  B4 0C		     2	        MOV AH,0CH
- 087D  A0 001E R	     2	        MOV AL,BLUE
- 0880  BA 0064		     2	        MOV DX,100
- 0883  B9 0050		     2	        MOV CX,80
- 0886			     2	        ??0048:
- 0886  B9 0050		     2	            MOV CX,80
- 0889  CD 10		     2	            ??0049:INT 10H
- 088B  41		     2	                INC CX
- 088C  83 F9 64		     2	                CMP CX,100
- 088F  72 F8		     2	                JB ??0049
- 0891  42		     2	            INC DX
- 0892  81 FA 00D2	     2	            CMP DX,210
- 0896  72 EE		     2	            JB ??0048
- 0898  33 DB		     2	        XOR BX,BX
- 089A  33 C9		     2	        XOR CX,CX
- 089C  33 D2		     2	        XOR DX,DX
- 089E  B4 0C		     2	        MOV AH,0CH
- 08A0  A0 001E R	     2	        MOV AL,BLUE
- 08A3  BA 0064		     2	        MOV DX,100
- 08A6  B9 0050		     2	        MOV CX,80
- 08A9			     2	        ??004A:
- 08A9  B9 0050		     2	            MOV CX,80
- 08AC  CD 10		     2	            ??004B:INT 10H
- 08AE  41		     2	                INC CX
- 08AF  81 F9 0096	     2	                CMP CX,150
- 08B3  72 F7		     2	                JB ??004B
- 08B5  42		     2	            INC DX
- 08B6  83 FA 78		     2	            CMP DX,120
- 08B9  72 EE		     2	            JB ??004A
- 08BB  33 DB		     2	        XOR BX,BX
- 08BD  33 C9		     2	        XOR CX,CX
- 08BF  33 D2		     2	        XOR DX,DX
- 08C1  B4 0C		     2	        MOV AH,0CH
- 08C3  A0 001E R	     2	        MOV AL,BLUE
- 08C6  BA 006E		     2	        MOV DX,110
- 08C9  B9 008C		     2	        MOV CX,140
- 08CC			     2	        ??004C:
- 08CC  B9 008C		     2	            MOV CX,140
- 08CF  CD 10		     2	            ??004D:INT 10H
- 08D1  41		     2	                INC CX
- 08D2  81 F9 00A0	     2	                CMP CX,160
- 08D6  72 F7		     2	                JB ??004D
- 08D8  42		     2	            INC DX
- 08D9  81 FA 00D2	     2	            CMP DX,210
- 08DD  72 ED		     2	            JB ??004C
- 08DF  33 DB		     2	        XOR BX,BX
- 08E1  33 C9		     2	        XOR CX,CX
- 08E3  33 D2		     2	        XOR DX,DX
- 08E5  B4 0C		     2	        MOV AH,0CH
- 08E7  A0 001E R	     2	        MOV AL,BLUE
- 08EA  BA 00C8		     2	        MOV DX,200
- 08ED  B9 0050		     2	        MOV CX,80
- 08F0			     2	        ??004E:
- 08F0  B9 0050		     2	            MOV CX,80
- 08F3  CD 10		     2	            ??004F:INT 10H
- 08F5  41		     2	                INC CX
- 08F6  81 F9 0096	     2	                CMP CX,150
- 08FA  72 F7		     2	                JB ??004F
- 08FC  42		     2	            INC DX
- 08FD  81 FA 00DC	     2	            CMP DX,220
- 0901  72 ED		     2	            JB ??004E
- 0903  33 DB		     2	        XOR BX,BX
- 0905  33 C9		     2	        XOR CX,CX
- 0907  33 D2		     2	        XOR DX,DX
- 0909  B4 0C		     2	        MOV AH,0CH
- 090B  A0 001E R	     2	        MOV AL,BLUE
- 090E  BA 0064		     2	        MOV DX,100
- 0911  B9 00C8		     2	        MOV CX,200
- 0914			     2	        ??0050:
- 0914  B9 00C8		     2	            MOV CX,200
- 0917  CD 10		     2	            ??0051:INT 10H
- 0919  41		     2	                INC CX
- 091A  81 F9 0118	     2	                CMP CX,280
- 091E  72 F7		     2	                JB ??0051
- 0920  42		     2	            INC DX
- 0921  83 FA 78		     2	            CMP DX,120
- 0924  72 EE		     2	            JB ??0050
- 0926  33 DB		     2	        XOR BX,BX
- 0928  33 C9		     2	        XOR CX,CX
- 092A  33 D2		     2	        XOR DX,DX
- 092C  B4 0C		     2	        MOV AH,0CH
- 092E  A0 001E R	     2	        MOV AL,BLUE
- 0931  BA 0096		     2	        MOV DX,150
- 0934  B9 00C8		     2	        MOV CX,200
- 0937			     2	        ??0052:
- 0937  B9 00C8		     2	            MOV CX,200
- 093A  CD 10		     2	            ??0053:INT 10H
- 093C  41		     2	                INC CX
- 093D  81 F9 0118	     2	                CMP CX,280
- 0941  72 F7		     2	                JB ??0053
- 0943  42		     2	            INC DX
- 0944  81 FA 00AA	     2	            CMP DX,170
- 0948  72 ED		     2	            JB ??0052
- 094A  33 DB		     2	        XOR BX,BX
- 094C  33 C9		     2	        XOR CX,CX
- 094E  33 D2		     2	        XOR DX,DX
- 0950  B4 0C		     2	        MOV AH,0CH
- 0952  A0 001E R	     2	        MOV AL,BLUE
- 0955  BA 00C8		     2	        MOV DX,200
- 0958  B9 00C8		     2	        MOV CX,200
- 095B			     2	        ??0054:
- 095B  B9 00C8		     2	            MOV CX,200
- 095E  CD 10		     2	            ??0055:INT 10H
- 0960  41		     2	                INC CX
- 0961  81 F9 0118	     2	                CMP CX,280
- 0965  72 F7		     2	                JB ??0055
- 0967  42		     2	            INC DX
- 0968  81 FA 00DC	     2	            CMP DX,220
- 096C  72 ED		     2	            JB ??0054
- 096E  33 DB		     2	        XOR BX,BX
- 0970  33 C9		     2	        XOR CX,CX
- 0972  33 D2		     2	        XOR DX,DX
- 0974  B4 0C		     2	        MOV AH,0CH
- 0976  A0 001E R	     2	        MOV AL,BLUE
- 0979  BA 0064		     2	        MOV DX,100
- 097C  B9 00C8		     2	        MOV CX,200
- 097F			     2	        ??0056:
- 097F  B9 00C8		     2	            MOV CX,200
- 0982  CD 10		     2	            ??0057:INT 10H
- 0984  41		     2	                INC CX
- 0985  81 F9 00DC	     2	                CMP CX,220
- 0989  72 F7		     2	                JB ??0057
- 098B  42		     2	            INC DX
- 098C  81 FA 00DC	     2	            CMP DX,220
- 0990  72 ED		     2	            JB ??0056
- 0992  33 DB		     2	        XOR BX,BX
- 0994  33 C9		     2	        XOR CX,CX
- 0996  33 D2		     2	        XOR DX,DX
- 0998  B4 0C		     2	        MOV AH,0CH
- 099A  A0 001E R	     2	        MOV AL,BLUE
- 099D  BA 0064		     2	        MOV DX,100
- 09A0  B9 014A		     2	        MOV CX,330
- 09A3			     2	        ??0058:
- 09A3  B9 014A		     2	            MOV CX,330
- 09A6  CD 10		     2	            ??0059:INT 10H
- 09A8  41		     2	                INC CX
- 09A9  81 F9 01A4	     2	                CMP CX,420
- 09AD  72 F7		     2	                JB ??0059
- 09AF  42		     2	            INC DX
- 09B0  83 FA 78		     2	            CMP DX,120
- 09B3  72 EE		     2	            JB ??0058
- 09B5  33 DB		     2	        XOR BX,BX
- 09B7  33 C9		     2	        XOR CX,CX
- 09B9  33 D2		     2	        XOR DX,DX
- 09BB  B4 0C		     2	        MOV AH,0CH
- 09BD  A0 001E R	     2	        MOV AL,BLUE
- 09C0  BA 0096		     2	        MOV DX,150
- 09C3  B9 014A		     2	        MOV CX,330
- 09C6			     2	        ??005A:
- 09C6  B9 014A		     2	            MOV CX,330
- 09C9  CD 10		     2	            ??005B:INT 10H
- 09CB  41		     2	                INC CX
- 09CC  81 F9 01A4	     2	                CMP CX,420
- 09D0  72 F7		     2	                JB ??005B
- 09D2  42		     2	            INC DX
- 09D3  81 FA 00AA	     2	            CMP DX,170
- 09D7  72 ED		     2	            JB ??005A
- 09D9  33 DB		     2	        XOR BX,BX
- 09DB  33 C9		     2	        XOR CX,CX
- 09DD  33 D2		     2	        XOR DX,DX
- 09DF  B4 0C		     2	        MOV AH,0CH
- 09E1  A0 001E R	     2	        MOV AL,BLUE
- 09E4  BA 0064		     2	        MOV DX,100
- 09E7  B9 014A		     2	        MOV CX,330
- 09EA			     2	        ??005C:
- 09EA  B9 014A		     2	            MOV CX,330
- 09ED  CD 10		     2	            ??005D:INT 10H
- 09EF  41		     2	                INC CX
- 09F0  81 F9 015E	     2	                CMP CX,350
- 09F4  72 F7		     2	                JB ??005D
- 09F6  42		     2	            INC DX
- 09F7  81 FA 00DC	     2	            CMP DX,220
- 09FB  72 ED		     2	            JB ??005C
- 09FD  33 DB		     2	        XOR BX,BX
- 09FF  33 C9		     2	        XOR CX,CX
- 0A01  33 D2		     2	        XOR DX,DX
- 0A03  B4 0C		     2	        MOV AH,0CH
- 0A05  A0 001E R	     2	        MOV AL,BLUE
- 0A08  BA 0064		     2	        MOV DX,100
- 0A0B  B9 0190		     2	        MOV CX,400
- 0A0E			     2	        ??005E:
- 0A0E  B9 0190		     2	            MOV CX,400
- 0A11  CD 10		     2	            ??005F:INT 10H
- 0A13  41		     2	                INC CX
- 0A14  81 F9 01A4	     2	                CMP CX,420
- 0A18  72 F7		     2	                JB ??005F
- 0A1A  42		     2	            INC DX
- 0A1B  81 FA 00DC	     2	            CMP DX,220
- 0A1F  72 ED		     2	            JB ??005E
- 0A21  33 DB		     2	        XOR BX,BX
- 0A23  33 C9		     2	        XOR CX,CX
- 0A25  33 D2		     2	        XOR DX,DX
- 0A27  B4 0C		     2	        MOV AH,0CH
- 0A29  A0 001E R	     2	        MOV AL,BLUE
- 0A2C  BA 0064		     2	        MOV DX,100
- 0A2F  B9 01D6		     2	        MOV CX,470
- 0A32			     2	        ??0060:
- 0A32  B9 01D6		     2	            MOV CX,470
- 0A35  CD 10		     2	            ??0061:INT 10H
- 0A37  41		     2	                INC CX
- 0A38  81 F9 021C	     2	                CMP CX,540
- 0A3C  72 F7		     2	                JB ??0061
- 0A3E  42		     2	            INC DX
- 0A3F  83 FA 78		     2	            CMP DX,120
- 0A42  72 EE		     2	            JB ??0060
- 0A44  33 DB		     2	        XOR BX,BX
- 0A46  33 C9		     2	        XOR CX,CX
- 0A48  33 D2		     2	        XOR DX,DX
- 0A4A  B4 0C		     2	        MOV AH,0CH
- 0A4C  A0 001E R	     2	        MOV AL,BLUE
- 0A4F  BA 00C8		     2	        MOV DX,200
- 0A52  B9 01D6		     2	        MOV CX,470
- 0A55			     2	        ??0062:
- 0A55  B9 01D6		     2	            MOV CX,470
- 0A58  CD 10		     2	            ??0063:INT 10H
- 0A5A  41		     2	                INC CX
- 0A5B  81 F9 021C	     2	                CMP CX,540
- 0A5F  72 F7		     2	                JB ??0063
- 0A61  42		     2	            INC DX
- 0A62  81 FA 00DC	     2	            CMP DX,220
- 0A66  72 ED		     2	            JB ??0062
- 0A68  33 DB		     2	        XOR BX,BX
- 0A6A  33 C9		     2	        XOR CX,CX
- 0A6C  33 D2		     2	        XOR DX,DX
- 0A6E  B4 0C		     2	        MOV AH,0CH
- 0A70  A0 001E R	     2	        MOV AL,BLUE
- 0A73  BA 006E		     2	        MOV DX,110
- 0A76  B9 0212		     2	        MOV CX,530
- 0A79			     2	        ??0064:
- 0A79  B9 0212		     2	            MOV CX,530
- 0A7C  CD 10		     2	            ??0065:INT 10H
- 0A7E  41		     2	                INC CX
- 0A7F  81 F9 0226	     2	                CMP CX,550
- 0A83  72 F7		     2	                JB ??0065
- 0A85  42		     2	            INC DX
- 0A86  81 FA 00D2	     2	            CMP DX,210
- 0A8A  72 ED		     2	            JB ??0064
- 0A8C  33 DB		     2	        XOR BX,BX
- 0A8E  33 C9		     2	        XOR CX,CX
- 0A90  33 D2		     2	        XOR DX,DX
- 0A92  B4 0C		     2	        MOV AH,0CH
- 0A94  A0 001E R	     2	        MOV AL,BLUE
- 0A97  BA 0064		     2	        MOV DX,100
- 0A9A  B9 01D6		     2	        MOV CX,470
- 0A9D			     2	        ??0066:
- 0A9D  B9 01D6		     2	            MOV CX,470
- 0AA0  CD 10		     2	            ??0067:INT 10H
- 0AA2  41		     2	                INC CX
- 0AA3  81 F9 01EA	     2	                CMP CX,490
- 0AA7  72 F7		     2	                JB ??0067
- 0AA9  42		     2	            INC DX
- 0AAA  81 FA 00DC	     2	            CMP DX,220
- 0AAE  72 ED		     2	            JB ??0066
+ 0842  E8 00DA					CALL DRAWDEADIMG
 						;文字
-						WRITECONWORD
- 0AB0  33 DB		     1	        XOR BX,BX
- 0AB2  B6 16		     1	        MOV DH,22
- 0AB4  B2 19		     1	        MOV DL,25
- 0AB6  B4 02		     1	        MOV AH,2
- 0AB8  CD 10		     1	        INT 10H
- 0ABA  8B 0E 0073 R	     1	        MOV CX,LENCONSTR
- 0ABE  33 F6		     1	        XOR SI,SI
- 0AC0			     1	        ??0068:
- 0AC0  B4 02		     1	        MOV AH,2
- 0AC2  8A 94 005A R	     1	        MOV DL,CONSTR[SI]
- 0AC6  CD 21		     1	        INT 21H
- 0AC8  46		     1	        INC SI
- 0AC9  E2 F5		     1	        LOOP ??0068
- 0ACB  C3					RET
- 0ACC					DRAWDEADSCENCE ENDP
+ 0845  E8 0313					CALL WRITECONWORD
+ 0848  C3					RET
+ 0849					DRAWDEADSCENCE ENDP
 
 					;胜利场景
- 0ACC					DRAWVICTORYSCENCE PROC
+ 0849					DRAWVICTORYSCENCE PROC
 						;清屏
- 0ACC  E8 01C9					CALL CLEAN	
+ 0849  E8 0007					CALL CLEAN	
 						;图形
-						DRAWVICTORYIMG
- 0ACF  33 DB		     2	        XOR BX,BX
- 0AD1  33 C9		     2	        XOR CX,CX
- 0AD3  33 D2		     2	        XOR DX,DX
- 0AD5  B4 0C		     2	        MOV AH,0CH
- 0AD7  A0 001E R	     2	        MOV AL,BLUE
- 0ADA  BA 0050		     2	        MOV DX,80
- 0ADD  B9 0064		     2	        MOV CX,100
- 0AE0			     2	        ??0069:
- 0AE0  B9 0064		     2	            MOV CX,100
- 0AE3  CD 10		     2	            ??006A:INT 10H
- 0AE5  41		     2	                INC CX
- 0AE6  83 F9 78		     2	                CMP CX,120
- 0AE9  72 F8		     2	                JB ??006A
- 0AEB  42		     2	            INC DX
- 0AEC  81 FA 00DC	     2	            CMP DX,220
- 0AF0  72 EE		     2	            JB ??0069
- 0AF2  33 DB		     2	        XOR BX,BX
- 0AF4  33 C9		     2	        XOR CX,CX
- 0AF6  33 D2		     2	        XOR DX,DX
- 0AF8  B4 0C		     2	        MOV AH,0CH
- 0AFA  A0 001E R	     2	        MOV AL,BLUE
- 0AFD  BA 0050		     2	        MOV DX,80
- 0B00  B9 008C		     2	        MOV CX,140
- 0B03			     2	        ??006B:
- 0B03  B9 008C		     2	            MOV CX,140
- 0B06  CD 10		     2	            ??006C:INT 10H
- 0B08  41		     2	                INC CX
- 0B09  81 F9 00A0	     2	                CMP CX,160
- 0B0D  72 F7		     2	                JB ??006C
- 0B0F  42		     2	            INC DX
- 0B10  81 FA 00DC	     2	            CMP DX,220
- 0B14  72 ED		     2	            JB ??006B
- 0B16  33 DB		     2	        XOR BX,BX
- 0B18  33 C9		     2	        XOR CX,CX
- 0B1A  33 D2		     2	        XOR DX,DX
- 0B1C  B4 0C		     2	        MOV AH,0CH
- 0B1E  A0 001E R	     2	        MOV AL,BLUE
- 0B21  BA 0050		     2	        MOV DX,80
- 0B24  B9 00B4		     2	        MOV CX,180
- 0B27			     2	        ??006D:
- 0B27  B9 00B4		     2	            MOV CX,180
- 0B2A  CD 10		     2	            ??006E:INT 10H
- 0B2C  41		     2	                INC CX
- 0B2D  81 F9 00C8	     2	                CMP CX,200
- 0B31  72 F7		     2	                JB ??006E
- 0B33  42		     2	            INC DX
- 0B34  81 FA 00DC	     2	            CMP DX,220
- 0B38  72 ED		     2	            JB ??006D
- 0B3A  33 DB		     2	        XOR BX,BX
- 0B3C  33 C9		     2	        XOR CX,CX
- 0B3E  33 D2		     2	        XOR DX,DX
- 0B40  B4 0C		     2	        MOV AH,0CH
- 0B42  A0 001E R	     2	        MOV AL,BLUE
- 0B45  BA 00C8		     2	        MOV DX,200
- 0B48  B9 0064		     2	        MOV CX,100
- 0B4B			     2	        ??006F:
- 0B4B  B9 0064		     2	            MOV CX,100
- 0B4E  CD 10		     2	            ??0070:INT 10H
- 0B50  41		     2	                INC CX
- 0B51  81 F9 00C8	     2	                CMP CX,200
- 0B55  72 F7		     2	                JB ??0070
- 0B57  42		     2	            INC DX
- 0B58  81 FA 00DC	     2	            CMP DX,220
- 0B5C  72 ED		     2	            JB ??006F
- 0B5E  33 DB		     2	        XOR BX,BX
- 0B60  33 C9		     2	        XOR CX,CX
- 0B62  33 D2		     2	        XOR DX,DX
- 0B64  B4 0C		     2	        MOV AH,0CH
- 0B66  A0 001E R	     2	        MOV AL,BLUE
- 0B69  BA 0050		     2	        MOV DX,80
- 0B6C  B9 00FA		     2	        MOV CX,250
- 0B6F			     2	        ??0071:
- 0B6F  B9 00FA		     2	            MOV CX,250
- 0B72  CD 10		     2	            ??0072:INT 10H
- 0B74  41		     2	                INC CX
- 0B75  81 F9 014A	     2	                CMP CX,330
- 0B79  72 F7		     2	                JB ??0072
- 0B7B  42		     2	            INC DX
- 0B7C  83 FA 64		     2	            CMP DX,100
- 0B7F  72 EE		     2	            JB ??0071
- 0B81  33 DB		     2	        XOR BX,BX
- 0B83  33 C9		     2	        XOR CX,CX
- 0B85  33 D2		     2	        XOR DX,DX
- 0B87  B4 0C		     2	        MOV AH,0CH
- 0B89  A0 001E R	     2	        MOV AL,BLUE
- 0B8C  BA 0050		     2	        MOV DX,80
- 0B8F  B9 0118		     2	        MOV CX,280
- 0B92			     2	        ??0073:
- 0B92  B9 0118		     2	            MOV CX,280
- 0B95  CD 10		     2	            ??0074:INT 10H
- 0B97  41		     2	                INC CX
- 0B98  81 F9 012C	     2	                CMP CX,300
- 0B9C  72 F7		     2	                JB ??0074
- 0B9E  42		     2	            INC DX
- 0B9F  81 FA 00DC	     2	            CMP DX,220
- 0BA3  72 ED		     2	            JB ??0073
- 0BA5  33 DB		     2	        XOR BX,BX
- 0BA7  33 C9		     2	        XOR CX,CX
- 0BA9  33 D2		     2	        XOR DX,DX
- 0BAB  B4 0C		     2	        MOV AH,0CH
- 0BAD  A0 001E R	     2	        MOV AL,BLUE
- 0BB0  BA 00C8		     2	        MOV DX,200
- 0BB3  B9 00FA		     2	        MOV CX,250
- 0BB6			     2	        ??0075:
- 0BB6  B9 00FA		     2	            MOV CX,250
- 0BB9  CD 10		     2	            ??0076:INT 10H
- 0BBB  41		     2	                INC CX
- 0BBC  81 F9 014A	     2	                CMP CX,330
- 0BC0  72 F7		     2	                JB ??0076
- 0BC2  42		     2	            INC DX
- 0BC3  81 FA 00DC	     2	            CMP DX,220
- 0BC7  72 ED		     2	            JB ??0075
- 0BC9  33 DB		     2	        XOR BX,BX
- 0BCB  33 C9		     2	        XOR CX,CX
- 0BCD  33 D2		     2	        XOR DX,DX
- 0BCF  B4 0C		     2	        MOV AH,0CH
- 0BD1  A0 001E R	     2	        MOV AL,BLUE
- 0BD4  BA 0050		     2	        MOV DX,80
- 0BD7  B9 017C		     2	        MOV CX,380
- 0BDA			     2	        ??0077:
- 0BDA  B9 017C		     2	            MOV CX,380
- 0BDD  CD 10		     2	            ??0078:INT 10H
- 0BDF  41		     2	                INC CX
- 0BE0  81 F9 0190	     2	                CMP CX,400
- 0BE4  72 F7		     2	                JB ??0078
- 0BE6  42		     2	            INC DX
- 0BE7  81 FA 00DC	     2	            CMP DX,220
- 0BEB  72 ED		     2	            JB ??0077
- 0BED  33 DB		     2	        XOR BX,BX
- 0BEF  33 C9		     2	        XOR CX,CX
- 0BF1  33 D2		     2	        XOR DX,DX
- 0BF3  B4 0C		     2	        MOV AH,0CH
- 0BF5  A0 001E R	     2	        MOV AL,BLUE
- 0BF8  BA 0050		     2	        MOV DX,80
- 0BFB  B9 017C		     2	        MOV CX,380
- 0BFE			     2	        ??0079:
- 0BFE  B9 017C		     2	            MOV CX,380
- 0C01  CD 10		     2	            ??007A:INT 10H
- 0C03  41		     2	                INC CX
- 0C04  81 F9 01AE	     2	                CMP CX,430
- 0C08  72 F7		     2	                JB ??007A
- 0C0A  42		     2	            INC DX
- 0C0B  83 FA 64		     2	            CMP DX,100
- 0C0E  72 EE		     2	            JB ??0079
- 0C10  33 DB		     2	        XOR BX,BX
- 0C12  33 C9		     2	        XOR CX,CX
- 0C14  33 D2		     2	        XOR DX,DX
- 0C16  B4 0C		     2	        MOV AH,0CH
- 0C18  A0 001E R	     2	        MOV AL,BLUE
- 0C1B  BA 0050		     2	        MOV DX,80
- 0C1E  B9 01AE		     2	        MOV CX,430
- 0C21			     2	        ??007B:
- 0C21  B9 01AE		     2	            MOV CX,430
- 0C24  CD 10		     2	            ??007C:INT 10H
- 0C26  41		     2	                INC CX
- 0C27  81 F9 01C2	     2	                CMP CX,450
- 0C2B  72 F7		     2	                JB ??007C
- 0C2D  42		     2	            INC DX
- 0C2E  81 FA 00DC	     2	            CMP DX,220
- 0C32  72 ED		     2	            JB ??007B
- 0C34  33 DB		     2	        XOR BX,BX
- 0C36  33 C9		     2	        XOR CX,CX
- 0C38  33 D2		     2	        XOR DX,DX
- 0C3A  B4 0C		     2	        MOV AH,0CH
- 0C3C  A0 001E R	     2	        MOV AL,BLUE
- 0C3F  BA 00C8		     2	        MOV DX,200
- 0C42  B9 01C2		     2	        MOV CX,450
- 0C45			     2	        ??007D:
- 0C45  B9 01C2		     2	            MOV CX,450
- 0C48  CD 10		     2	            ??007E:INT 10H
- 0C4A  41		     2	                INC CX
- 0C4B  81 F9 01E0	     2	                CMP CX,480
- 0C4F  72 F7		     2	                JB ??007E
- 0C51  42		     2	            INC DX
- 0C52  81 FA 00DC	     2	            CMP DX,220
- 0C56  72 ED		     2	            JB ??007D
- 0C58  33 DB		     2	        XOR BX,BX
- 0C5A  33 C9		     2	        XOR CX,CX
- 0C5C  33 D2		     2	        XOR DX,DX
- 0C5E  B4 0C		     2	        MOV AH,0CH
- 0C60  A0 001E R	     2	        MOV AL,BLUE
- 0C63  BA 0050		     2	        MOV DX,80
- 0C66  B9 01E0		     2	        MOV CX,480
- 0C69			     2	        ??007F:
- 0C69  B9 01E0		     2	            MOV CX,480
- 0C6C  CD 10		     2	            ??0080:INT 10H
- 0C6E  41		     2	                INC CX
- 0C6F  81 F9 01F4	     2	                CMP CX,500
- 0C73  72 F7		     2	                JB ??0080
- 0C75  42		     2	            INC DX
- 0C76  81 FA 00DC	     2	            CMP DX,220
- 0C7A  72 ED		     2	            JB ??007F
+ 084C  E8 0328					CALL DRAWVICTORYIMG
 						;文字
-						WRITECONWORD
- 0C7C  33 DB		     1	        XOR BX,BX
- 0C7E  B6 16		     1	        MOV DH,22
- 0C80  B2 19		     1	        MOV DL,25
- 0C82  B4 02		     1	        MOV AH,2
- 0C84  CD 10		     1	        INT 10H
- 0C86  8B 0E 0073 R	     1	        MOV CX,LENCONSTR
- 0C8A  33 F6		     1	        XOR SI,SI
- 0C8C			     1	        ??0081:
- 0C8C  B4 02		     1	        MOV AH,2
- 0C8E  8A 94 005A R	     1	        MOV DL,CONSTR[SI]
- 0C92  CD 21		     1	        INT 21H
- 0C94  46		     1	        INC SI
- 0C95  E2 F5		     1	        LOOP ??0081
- 0C97  C3					RET
- 0C98					DRAWVICTORYSCENCE ENDP
+ 084F  E8 0309					CALL WRITECONWORD
+ 0852  C3					RET
+ 0853					DRAWVICTORYSCENCE ENDP
 					
 					  ;清屏
- 0C98				    CLEAN PROC
+ 0853				    CLEAN PROC
 				        SVRGI
- 0C98  50		     1	        PUSH AX
- 0C99  53		     1	        PUSH BX
- 0C9A  51		     1	        PUSH CX
- 0C9B  52		     1	        PUSH DX
- 0C9C  B0 00			        MOV AL,0
- 0C9E  33 C9			        XOR CX,CX
- 0CA0  B6 19			        MOV DH,25
- 0CA2  B2 4E			        MOV DL,78
- 0CA4  B7 00			        MOV BH,0
- 0CA6  B4 07			        MOV AH,7
- 0CA8  CD 10			        INT 10H
+ 0853  50		     1	        PUSH AX
+ 0854  53		     1	        PUSH BX
+ 0855  51		     1	        PUSH CX
+ 0856  52		     1	        PUSH DX
+ 0857  B0 00			        MOV AL,0
+ 0859  33 C9			        XOR CX,CX
+ 085B  B6 19			        MOV DH,25
+ 085D  B2 4E			        MOV DL,78
+ 085F  B7 00			        MOV BH,0
+ 0861  B4 07			        MOV AH,7
+ 0863  CD 10			        INT 10H
 				        LDRGI
- 0CAA  58		     1	        POP AX
- 0CAB  5B		     1	        POP BX
- 0CAC  59		     1	        POP CX
- 0CAD  5A		     1	        POP DX
- 0CAE  C3			        RET
- 0CAF				    CLEAN ENDP
+ 0865  58		     1	        POP AX
+ 0866  5B		     1	        POP BX
+ 0867  59		     1	        POP CX
+ 0868  5A		     1	        POP DX
+ 0869  C3			        RET
+ 086A				    CLEAN ENDP
 				    
- 0CAF				    READFILE PROC
- 0CAF  8D 16 0079 R		    	LEA DX,FILENAME
- 0CB3  B0 02			    	MOV AL,2
- 0CB5  B9 0000			   		MOV CX,0
- 0CB8  B4 3D			    	MOV AH,3DH
- 0CBA  CD 21			    	INT 21H
+ 086A				    READFILE PROC
+ 086A  8D 16 0079 R		    	LEA DX,FILENAME
+ 086E  B0 02			    	MOV AL,2
+ 0870  B9 0000			   		MOV CX,0
+ 0873  B4 3D			    	MOV AH,3DH
+ 0875  CD 21			    	INT 21H
 				    	
- 0CBC  A3 0075 R		    	MOV HANDLE,AX
- 0CBF  8D 16 0077 R		   		LEA DX,LEVEL
- 0CC3  8B 1E 0075 R		    	MOV BX,HANDLE
- 0CC7  B9 0001			    	MOV CX,1
- 0CCA  B4 3F			    	MOV AH,3FH
- 0CCC  CD 21			    	INT 21H
+ 0877  A3 0075 R		    	MOV HANDLE,AX
+ 087A  8D 16 0077 R		   		LEA DX,LEVEL
+ 087E  8B 1E 0075 R		    	MOV BX,HANDLE
+ 0882  B9 0001			    	MOV CX,1
+ 0885  B4 3F			    	MOV AH,3FH
+ 0887  CD 21			    	INT 21H
 
- 0CCE  B4 3E			    	MOV AH,3EH
- 0CD0  CD 21			    	INT 21H
- 0CD2  C3			    	RET
- 0CD3				    READFILE ENDP
+ 0889  B4 3E			    	MOV AH,3EH
+ 088B  CD 21			    	INT 21H
+ 088D  C3			    	RET
+ 088E				    READFILE ENDP
 				   
- 0CD3				   	WRITEFILE PROC
- 0CD3  B4 3D			 		MOV AH, 3DH
- 0CD5  B0 01					MOV AL, 1
- 0CD7  8D 16 0079 R				LEA DX, FILENAME
- 0CDB  CD 21					INT 21H
- 0CDD  A3 0075 R				MOV HANDLE,ax
+ 088E				   	WRITEFILE PROC
+ 088E  B4 3D			 		MOV AH, 3DH
+ 0890  B0 01					MOV AL, 1
+ 0892  8D 16 0079 R				LEA DX, FILENAME
+ 0896  CD 21					INT 21H
+ 0898  A3 0075 R				MOV HANDLE,ax
 				    
- 0CE0  B4 40			    	MOV AH,40H
- 0CE2  8B 1E 0075 R		    	MOV BX,HANDLE
- 0CE6  8D 16 0077 R		    	LEA DX,LEVEL
- 0CEA  B9 0001			    	MOV CX,1
- 0CED  CD 21			    	INT 21H
+ 089B  B4 40			    	MOV AH,40H
+ 089D  8B 1E 0075 R		    	MOV BX,HANDLE
+ 08A1  8D 16 0077 R		    	LEA DX,LEVEL
+ 08A5  B9 0001			    	MOV CX,1
+ 08A8  CD 21			    	INT 21H
 				   
- 0CEF  B4 3E			    	MOV AH,3EH
- 0CF1  8B 1E 0075 R		    	MOV BX,HANDLE
- 0CF5  CD 21			    	INT 21H
- 0CF7  C3			   		RET
- 0CF8				   	WRITEFILE ENDP
+ 08AA  B4 3E			    	MOV AH,3EH
+ 08AC  8B 1E 0075 R		    	MOV BX,HANDLE
+ 08B0  CD 21			    	INT 21H
+ 08B2  C3			   		RET
+ 08B3				   	WRITEFILE ENDP
+				   	
+				   	 ;加载到特定关卡
+ 08B3				    LOADLEVEL PROC
+ 08B3  B0 31			    MOV AL,'1'
+ 08B5  3A 06 0077 R		    CMP AL,LEVEL
+ 08B9  75 03 E9 F760		    JZ PLAYLEVEL1
+ 08BE  B0 32			    MOV AL,'2'
+ 08C0  3A 06 0077 R		    CMP AL,LEVEL
+ 08C4  75 03 E9 F7D2		    JZ PLAYLEVEL2
+ 08C9  B0 33			    MOV AL,'3'
+ 08CB  3A 06 0077 R		    CMP AL,LEVEL
+ 08CF  75 03 E9 F90B		    JZ PLAYLEVEL3
+ 08D4				    LOADLEVEL ENDP
+
+					;第一关初始化方块
+ 08D4				    SETPOSL1 PROC
+ 08D4  B8 005F			        MOV AX,95
+ 08D7  A3 0052 R		        MOV PLYX1,AX
+ 08DA  B8 0055			        MOV AX,85
+ 08DD  A3 0054 R		        MOV PLYY1,AX
+ 08E0  B8 0073			        MOV AX,115
+ 08E3  A3 0056 R		        MOV PLYX2,AX
+ 08E6  B8 0069			        MOV AX,105
+ 08E9  A3 0058 R		        MOV PLYY2,AX
+ 08EC  C3			        RET
+ 08ED				    SETPOSL1 ENDP 
 				    
- 0CF8				CODES ENDS
+				    ;第二关初始化方块
+ 08ED				    SETPOSL2 PROC
+ 08ED  B8 005F			        MOV AX,95
+ 08F0  A3 0052 R		        MOV PLYX1,AX
+ 08F3  B8 0055			        MOV AX,85
+ 08F6  A3 0054 R		        MOV PLYY1,AX
+ 08F9  B8 0073			        MOV AX,115
+ 08FC  A3 0056 R		        MOV PLYX2,AX
+ 08FF  B8 0069			        MOV AX,105
+ 0902  A3 0058 R		        MOV PLYY2,AX
+ 0905  C3			        RET
+ 0906				    SETPOSL2 ENDP
+				    
+				     ;第三关初始化方块
+ 0906				    SETPOSL3 PROC
+ 0906  B8 0050			        MOV AX,80
+ 0909  A3 0052 R		        MOV PLYX1,AX
+ 090C  B8 00A0			        MOV AX,160
+ 090F  A3 0054 R		        MOV PLYY1,AX
+ 0912  B8 0064			        MOV AX,100
+ 0915  A3 0056 R		        MOV PLYX2,AX
+ 0918  B8 00B4			        MOV AX,180
+ 091B  A3 0058 R		        MOV PLYY2,AX
+ 091E  C3			        RET
+ 091F				    SETPOSL3 ENDP
+				    
+				    
+				    ;图形
+ 091F				    DRAWDEADIMG PROC
+				    	;字母D,1号
+				     	DRAWRECT 80,100,100,210,BLUE
+ 091F  33 DB		     1	        XOR BX,BX
+ 0921  33 C9		     1	        XOR CX,CX
+ 0923  33 D2		     1	        XOR DX,DX
+ 0925  B4 0C		     1	        MOV AH,0CH
+ 0927  A0 001E R	     1	        MOV AL,BLUE
+ 092A  BA 0064		     1	        MOV DX,100
+ 092D  B9 0050		     1	        MOV CX,80
+ 0930			     1	        ??0044:
+ 0930  B9 0050		     1	        MOV CX,80
+ 0933  CD 10		     1	        ??0045:INT 10H
+ 0935  41		     1	        INC CX
+ 0936  83 F9 64		     1	        CMP CX,100
+ 0939  72 F8		     1	        JB ??0045
+ 093B  42		     1	        INC DX
+ 093C  81 FA 00D2	     1	        CMP DX,210
+ 0940  72 EE		     1	        JB ??0044
+				        DRAWRECT 80,100,150,120,BLUE
+ 0942  33 DB		     1	        XOR BX,BX
+ 0944  33 C9		     1	        XOR CX,CX
+ 0946  33 D2		     1	        XOR DX,DX
+ 0948  B4 0C		     1	        MOV AH,0CH
+ 094A  A0 001E R	     1	        MOV AL,BLUE
+ 094D  BA 0064		     1	        MOV DX,100
+ 0950  B9 0050		     1	        MOV CX,80
+ 0953			     1	        ??0046:
+ 0953  B9 0050		     1	        MOV CX,80
+ 0956  CD 10		     1	        ??0047:INT 10H
+ 0958  41		     1	        INC CX
+ 0959  81 F9 0096	     1	        CMP CX,150
+ 095D  72 F7		     1	        JB ??0047
+ 095F  42		     1	        INC DX
+ 0960  83 FA 78		     1	        CMP DX,120
+ 0963  72 EE		     1	        JB ??0046
+				        DRAWRECT 140,110,160,210,BLUE
+ 0965  33 DB		     1	        XOR BX,BX
+ 0967  33 C9		     1	        XOR CX,CX
+ 0969  33 D2		     1	        XOR DX,DX
+ 096B  B4 0C		     1	        MOV AH,0CH
+ 096D  A0 001E R	     1	        MOV AL,BLUE
+ 0970  BA 006E		     1	        MOV DX,110
+ 0973  B9 008C		     1	        MOV CX,140
+ 0976			     1	        ??0048:
+ 0976  B9 008C		     1	        MOV CX,140
+ 0979  CD 10		     1	        ??0049:INT 10H
+ 097B  41		     1	        INC CX
+ 097C  81 F9 00A0	     1	        CMP CX,160
+ 0980  72 F7		     1	        JB ??0049
+ 0982  42		     1	        INC DX
+ 0983  81 FA 00D2	     1	        CMP DX,210
+ 0987  72 ED		     1	        JB ??0048
+				        DRAWRECT 80,200,150,220,BLUE
+ 0989  33 DB		     1	        XOR BX,BX
+ 098B  33 C9		     1	        XOR CX,CX
+ 098D  33 D2		     1	        XOR DX,DX
+ 098F  B4 0C		     1	        MOV AH,0CH
+ 0991  A0 001E R	     1	        MOV AL,BLUE
+ 0994  BA 00C8		     1	        MOV DX,200
+ 0997  B9 0050		     1	        MOV CX,80
+ 099A			     1	        ??004A:
+ 099A  B9 0050		     1	        MOV CX,80
+ 099D  CD 10		     1	        ??004B:INT 10H
+ 099F  41		     1	        INC CX
+ 09A0  81 F9 0096	     1	        CMP CX,150
+ 09A4  72 F7		     1	        JB ??004B
+ 09A6  42		     1	        INC DX
+ 09A7  81 FA 00DC	     1	        CMP DX,220
+ 09AB  72 ED		     1	        JB ??004A
+				        ;字母E
+				        DRAWRECT 200,100,280,120,BLUE
+ 09AD  33 DB		     1	        XOR BX,BX
+ 09AF  33 C9		     1	        XOR CX,CX
+ 09B1  33 D2		     1	        XOR DX,DX
+ 09B3  B4 0C		     1	        MOV AH,0CH
+ 09B5  A0 001E R	     1	        MOV AL,BLUE
+ 09B8  BA 0064		     1	        MOV DX,100
+ 09BB  B9 00C8		     1	        MOV CX,200
+ 09BE			     1	        ??004C:
+ 09BE  B9 00C8		     1	        MOV CX,200
+ 09C1  CD 10		     1	        ??004D:INT 10H
+ 09C3  41		     1	        INC CX
+ 09C4  81 F9 0118	     1	        CMP CX,280
+ 09C8  72 F7		     1	        JB ??004D
+ 09CA  42		     1	        INC DX
+ 09CB  83 FA 78		     1	        CMP DX,120
+ 09CE  72 EE		     1	        JB ??004C
+				        DRAWRECT 200,150,280,170,BLUE
+ 09D0  33 DB		     1	        XOR BX,BX
+ 09D2  33 C9		     1	        XOR CX,CX
+ 09D4  33 D2		     1	        XOR DX,DX
+ 09D6  B4 0C		     1	        MOV AH,0CH
+ 09D8  A0 001E R	     1	        MOV AL,BLUE
+ 09DB  BA 0096		     1	        MOV DX,150
+ 09DE  B9 00C8		     1	        MOV CX,200
+ 09E1			     1	        ??004E:
+ 09E1  B9 00C8		     1	        MOV CX,200
+ 09E4  CD 10		     1	        ??004F:INT 10H
+ 09E6  41		     1	        INC CX
+ 09E7  81 F9 0118	     1	        CMP CX,280
+ 09EB  72 F7		     1	        JB ??004F
+ 09ED  42		     1	        INC DX
+ 09EE  81 FA 00AA	     1	        CMP DX,170
+ 09F2  72 ED		     1	        JB ??004E
+				        DRAWRECT 200,200,280,220,BLUE
+ 09F4  33 DB		     1	        XOR BX,BX
+ 09F6  33 C9		     1	        XOR CX,CX
+ 09F8  33 D2		     1	        XOR DX,DX
+ 09FA  B4 0C		     1	        MOV AH,0CH
+ 09FC  A0 001E R	     1	        MOV AL,BLUE
+ 09FF  BA 00C8		     1	        MOV DX,200
+ 0A02  B9 00C8		     1	        MOV CX,200
+ 0A05			     1	        ??0050:
+ 0A05  B9 00C8		     1	        MOV CX,200
+ 0A08  CD 10		     1	        ??0051:INT 10H
+ 0A0A  41		     1	        INC CX
+ 0A0B  81 F9 0118	     1	        CMP CX,280
+ 0A0F  72 F7		     1	        JB ??0051
+ 0A11  42		     1	        INC DX
+ 0A12  81 FA 00DC	     1	        CMP DX,220
+ 0A16  72 ED		     1	        JB ??0050
+				        DRAWRECT 200,100,220,220,BLUE
+ 0A18  33 DB		     1	        XOR BX,BX
+ 0A1A  33 C9		     1	        XOR CX,CX
+ 0A1C  33 D2		     1	        XOR DX,DX
+ 0A1E  B4 0C		     1	        MOV AH,0CH
+ 0A20  A0 001E R	     1	        MOV AL,BLUE
+ 0A23  BA 0064		     1	        MOV DX,100
+ 0A26  B9 00C8		     1	        MOV CX,200
+ 0A29			     1	        ??0052:
+ 0A29  B9 00C8		     1	        MOV CX,200
+ 0A2C  CD 10		     1	        ??0053:INT 10H
+ 0A2E  41		     1	        INC CX
+ 0A2F  81 F9 00DC	     1	        CMP CX,220
+ 0A33  72 F7		     1	        JB ??0053
+ 0A35  42		     1	        INC DX
+ 0A36  81 FA 00DC	     1	        CMP DX,220
+ 0A3A  72 ED		     1	        JB ??0052
+				        ;字母A
+				        DRAWRECT 330,100,420,120,BLUE
+ 0A3C  33 DB		     1	        XOR BX,BX
+ 0A3E  33 C9		     1	        XOR CX,CX
+ 0A40  33 D2		     1	        XOR DX,DX
+ 0A42  B4 0C		     1	        MOV AH,0CH
+ 0A44  A0 001E R	     1	        MOV AL,BLUE
+ 0A47  BA 0064		     1	        MOV DX,100
+ 0A4A  B9 014A		     1	        MOV CX,330
+ 0A4D			     1	        ??0054:
+ 0A4D  B9 014A		     1	        MOV CX,330
+ 0A50  CD 10		     1	        ??0055:INT 10H
+ 0A52  41		     1	        INC CX
+ 0A53  81 F9 01A4	     1	        CMP CX,420
+ 0A57  72 F7		     1	        JB ??0055
+ 0A59  42		     1	        INC DX
+ 0A5A  83 FA 78		     1	        CMP DX,120
+ 0A5D  72 EE		     1	        JB ??0054
+				        DRAWRECT 330,150,420,170,BLUE
+ 0A5F  33 DB		     1	        XOR BX,BX
+ 0A61  33 C9		     1	        XOR CX,CX
+ 0A63  33 D2		     1	        XOR DX,DX
+ 0A65  B4 0C		     1	        MOV AH,0CH
+ 0A67  A0 001E R	     1	        MOV AL,BLUE
+ 0A6A  BA 0096		     1	        MOV DX,150
+ 0A6D  B9 014A		     1	        MOV CX,330
+ 0A70			     1	        ??0056:
+ 0A70  B9 014A		     1	        MOV CX,330
+ 0A73  CD 10		     1	        ??0057:INT 10H
+ 0A75  41		     1	        INC CX
+ 0A76  81 F9 01A4	     1	        CMP CX,420
+ 0A7A  72 F7		     1	        JB ??0057
+ 0A7C  42		     1	        INC DX
+ 0A7D  81 FA 00AA	     1	        CMP DX,170
+ 0A81  72 ED		     1	        JB ??0056
+				        DRAWRECT 330,100,350,220,BLUE
+ 0A83  33 DB		     1	        XOR BX,BX
+ 0A85  33 C9		     1	        XOR CX,CX
+ 0A87  33 D2		     1	        XOR DX,DX
+ 0A89  B4 0C		     1	        MOV AH,0CH
+ 0A8B  A0 001E R	     1	        MOV AL,BLUE
+ 0A8E  BA 0064		     1	        MOV DX,100
+ 0A91  B9 014A		     1	        MOV CX,330
+ 0A94			     1	        ??0058:
+ 0A94  B9 014A		     1	        MOV CX,330
+ 0A97  CD 10		     1	        ??0059:INT 10H
+ 0A99  41		     1	        INC CX
+ 0A9A  81 F9 015E	     1	        CMP CX,350
+ 0A9E  72 F7		     1	        JB ??0059
+ 0AA0  42		     1	        INC DX
+ 0AA1  81 FA 00DC	     1	        CMP DX,220
+ 0AA5  72 ED		     1	        JB ??0058
+				        DRAWRECT 400,100,420,220,BLUE
+ 0AA7  33 DB		     1	        XOR BX,BX
+ 0AA9  33 C9		     1	        XOR CX,CX
+ 0AAB  33 D2		     1	        XOR DX,DX
+ 0AAD  B4 0C		     1	        MOV AH,0CH
+ 0AAF  A0 001E R	     1	        MOV AL,BLUE
+ 0AB2  BA 0064		     1	        MOV DX,100
+ 0AB5  B9 0190		     1	        MOV CX,400
+ 0AB8			     1	        ??005A:
+ 0AB8  B9 0190		     1	        MOV CX,400
+ 0ABB  CD 10		     1	        ??005B:INT 10H
+ 0ABD  41		     1	        INC CX
+ 0ABE  81 F9 01A4	     1	        CMP CX,420
+ 0AC2  72 F7		     1	        JB ??005B
+ 0AC4  42		     1	        INC DX
+ 0AC5  81 FA 00DC	     1	        CMP DX,220
+ 0AC9  72 ED		     1	        JB ??005A
+				        ;字母D,2号
+				     	DRAWRECT 470,100,540,120,BLUE
+ 0ACB  33 DB		     1	        XOR BX,BX
+ 0ACD  33 C9		     1	        XOR CX,CX
+ 0ACF  33 D2		     1	        XOR DX,DX
+ 0AD1  B4 0C		     1	        MOV AH,0CH
+ 0AD3  A0 001E R	     1	        MOV AL,BLUE
+ 0AD6  BA 0064		     1	        MOV DX,100
+ 0AD9  B9 01D6		     1	        MOV CX,470
+ 0ADC			     1	        ??005C:
+ 0ADC  B9 01D6		     1	        MOV CX,470
+ 0ADF  CD 10		     1	        ??005D:INT 10H
+ 0AE1  41		     1	        INC CX
+ 0AE2  81 F9 021C	     1	        CMP CX,540
+ 0AE6  72 F7		     1	        JB ??005D
+ 0AE8  42		     1	        INC DX
+ 0AE9  83 FA 78		     1	        CMP DX,120
+ 0AEC  72 EE		     1	        JB ??005C
+				        DRAWRECT 470,200,540,220,BLUE
+ 0AEE  33 DB		     1	        XOR BX,BX
+ 0AF0  33 C9		     1	        XOR CX,CX
+ 0AF2  33 D2		     1	        XOR DX,DX
+ 0AF4  B4 0C		     1	        MOV AH,0CH
+ 0AF6  A0 001E R	     1	        MOV AL,BLUE
+ 0AF9  BA 00C8		     1	        MOV DX,200
+ 0AFC  B9 01D6		     1	        MOV CX,470
+ 0AFF			     1	        ??005E:
+ 0AFF  B9 01D6		     1	        MOV CX,470
+ 0B02  CD 10		     1	        ??005F:INT 10H
+ 0B04  41		     1	        INC CX
+ 0B05  81 F9 021C	     1	        CMP CX,540
+ 0B09  72 F7		     1	        JB ??005F
+ 0B0B  42		     1	        INC DX
+ 0B0C  81 FA 00DC	     1	        CMP DX,220
+ 0B10  72 ED		     1	        JB ??005E
+				        DRAWRECT 530,110,550,210,BLUE
+ 0B12  33 DB		     1	        XOR BX,BX
+ 0B14  33 C9		     1	        XOR CX,CX
+ 0B16  33 D2		     1	        XOR DX,DX
+ 0B18  B4 0C		     1	        MOV AH,0CH
+ 0B1A  A0 001E R	     1	        MOV AL,BLUE
+ 0B1D  BA 006E		     1	        MOV DX,110
+ 0B20  B9 0212		     1	        MOV CX,530
+ 0B23			     1	        ??0060:
+ 0B23  B9 0212		     1	        MOV CX,530
+ 0B26  CD 10		     1	        ??0061:INT 10H
+ 0B28  41		     1	        INC CX
+ 0B29  81 F9 0226	     1	        CMP CX,550
+ 0B2D  72 F7		     1	        JB ??0061
+ 0B2F  42		     1	        INC DX
+ 0B30  81 FA 00D2	     1	        CMP DX,210
+ 0B34  72 ED		     1	        JB ??0060
+				        DRAWRECT 470,100,490,220,BLUE
+ 0B36  33 DB		     1	        XOR BX,BX
+ 0B38  33 C9		     1	        XOR CX,CX
+ 0B3A  33 D2		     1	        XOR DX,DX
+ 0B3C  B4 0C		     1	        MOV AH,0CH
+ 0B3E  A0 001E R	     1	        MOV AL,BLUE
+ 0B41  BA 0064		     1	        MOV DX,100
+ 0B44  B9 01D6		     1	        MOV CX,470
+ 0B47			     1	        ??0062:
+ 0B47  B9 01D6		     1	        MOV CX,470
+ 0B4A  CD 10		     1	        ??0063:INT 10H
+ 0B4C  41		     1	        INC CX
+ 0B4D  81 F9 01EA	     1	        CMP CX,490
+ 0B51  72 F7		     1	        JB ??0063
+ 0B53  42		     1	        INC DX
+ 0B54  81 FA 00DC	     1	        CMP DX,220
+ 0B58  72 ED		     1	        JB ??0062
+ 0B5A  C3			        RET
+ 0B5B				    DRAWDEADIMG ENDP
+				    
+				    ;文字
+ 0B5B				    WRITECONWORD PROC
+ 0B5B  33 DB			        XOR BX,BX
+ 0B5D  B6 16			        MOV DH,22
+ 0B5F  B2 19			        MOV DL,25
+ 0B61  B4 02			        MOV AH,2
+ 0B63  CD 10			        INT 10H
+				        
+ 0B65  8B 0E 0073 R		        MOV CX,LENCONSTR
+ 0B69  33 F6			        XOR SI,SI
+ 0B6B				        WRITENEXT:
+ 0B6B  B4 02			        MOV AH,2
+ 0B6D  8A 94 005A R		        MOV DL,CONSTR[SI]
+ 0B71  CD 21			        INT 21H
+ 0B73  46			        INC SI
+ 0B74  E2 F5			        LOOP WRITENEXT
+ 0B76  C3			        RET
+ 0B77				    WRITECONWORD ENDP
+				    
+				  
+				    
+ 0B77				    DRAWVICTORYIMG PROC
+				    	;W
+				    	DRAWRECT 100,80,120,220,BLUE
+ 0B77  33 DB		     1	        XOR BX,BX
+ 0B79  33 C9		     1	        XOR CX,CX
+ 0B7B  33 D2		     1	        XOR DX,DX
+ 0B7D  B4 0C		     1	        MOV AH,0CH
+ 0B7F  A0 001E R	     1	        MOV AL,BLUE
+ 0B82  BA 0050		     1	        MOV DX,80
+ 0B85  B9 0064		     1	        MOV CX,100
+ 0B88			     1	        ??0064:
+ 0B88  B9 0064		     1	        MOV CX,100
+ 0B8B  CD 10		     1	        ??0065:INT 10H
+ 0B8D  41		     1	        INC CX
+ 0B8E  83 F9 78		     1	        CMP CX,120
+ 0B91  72 F8		     1	        JB ??0065
+ 0B93  42		     1	        INC DX
+ 0B94  81 FA 00DC	     1	        CMP DX,220
+ 0B98  72 EE		     1	        JB ??0064
+				    	DRAWRECT 140,80,160,220,BLUE
+ 0B9A  33 DB		     1	        XOR BX,BX
+ 0B9C  33 C9		     1	        XOR CX,CX
+ 0B9E  33 D2		     1	        XOR DX,DX
+ 0BA0  B4 0C		     1	        MOV AH,0CH
+ 0BA2  A0 001E R	     1	        MOV AL,BLUE
+ 0BA5  BA 0050		     1	        MOV DX,80
+ 0BA8  B9 008C		     1	        MOV CX,140
+ 0BAB			     1	        ??0066:
+ 0BAB  B9 008C		     1	        MOV CX,140
+ 0BAE  CD 10		     1	        ??0067:INT 10H
+ 0BB0  41		     1	        INC CX
+ 0BB1  81 F9 00A0	     1	        CMP CX,160
+ 0BB5  72 F7		     1	        JB ??0067
+ 0BB7  42		     1	        INC DX
+ 0BB8  81 FA 00DC	     1	        CMP DX,220
+ 0BBC  72 ED		     1	        JB ??0066
+				    	DRAWRECT 180,80,200,220,BLUE
+ 0BBE  33 DB		     1	        XOR BX,BX
+ 0BC0  33 C9		     1	        XOR CX,CX
+ 0BC2  33 D2		     1	        XOR DX,DX
+ 0BC4  B4 0C		     1	        MOV AH,0CH
+ 0BC6  A0 001E R	     1	        MOV AL,BLUE
+ 0BC9  BA 0050		     1	        MOV DX,80
+ 0BCC  B9 00B4		     1	        MOV CX,180
+ 0BCF			     1	        ??0068:
+ 0BCF  B9 00B4		     1	        MOV CX,180
+ 0BD2  CD 10		     1	        ??0069:INT 10H
+ 0BD4  41		     1	        INC CX
+ 0BD5  81 F9 00C8	     1	        CMP CX,200
+ 0BD9  72 F7		     1	        JB ??0069
+ 0BDB  42		     1	        INC DX
+ 0BDC  81 FA 00DC	     1	        CMP DX,220
+ 0BE0  72 ED		     1	        JB ??0068
+				    	DRAWRECT 100,200,200,220,BLUE
+ 0BE2  33 DB		     1	        XOR BX,BX
+ 0BE4  33 C9		     1	        XOR CX,CX
+ 0BE6  33 D2		     1	        XOR DX,DX
+ 0BE8  B4 0C		     1	        MOV AH,0CH
+ 0BEA  A0 001E R	     1	        MOV AL,BLUE
+ 0BED  BA 00C8		     1	        MOV DX,200
+ 0BF0  B9 0064		     1	        MOV CX,100
+ 0BF3			     1	        ??006A:
+ 0BF3  B9 0064		     1	        MOV CX,100
+ 0BF6  CD 10		     1	        ??006B:INT 10H
+ 0BF8  41		     1	        INC CX
+ 0BF9  81 F9 00C8	     1	        CMP CX,200
+ 0BFD  72 F7		     1	        JB ??006B
+ 0BFF  42		     1	        INC DX
+ 0C00  81 FA 00DC	     1	        CMP DX,220
+ 0C04  72 ED		     1	        JB ??006A
+				    	;I
+				    	DRAWRECT 250,80,330,100,BLUE
+ 0C06  33 DB		     1	        XOR BX,BX
+ 0C08  33 C9		     1	        XOR CX,CX
+ 0C0A  33 D2		     1	        XOR DX,DX
+ 0C0C  B4 0C		     1	        MOV AH,0CH
+ 0C0E  A0 001E R	     1	        MOV AL,BLUE
+ 0C11  BA 0050		     1	        MOV DX,80
+ 0C14  B9 00FA		     1	        MOV CX,250
+ 0C17			     1	        ??006C:
+ 0C17  B9 00FA		     1	        MOV CX,250
+ 0C1A  CD 10		     1	        ??006D:INT 10H
+ 0C1C  41		     1	        INC CX
+ 0C1D  81 F9 014A	     1	        CMP CX,330
+ 0C21  72 F7		     1	        JB ??006D
+ 0C23  42		     1	        INC DX
+ 0C24  83 FA 64		     1	        CMP DX,100
+ 0C27  72 EE		     1	        JB ??006C
+				    	DRAWRECT 280,80,300,220,BLUE
+ 0C29  33 DB		     1	        XOR BX,BX
+ 0C2B  33 C9		     1	        XOR CX,CX
+ 0C2D  33 D2		     1	        XOR DX,DX
+ 0C2F  B4 0C		     1	        MOV AH,0CH
+ 0C31  A0 001E R	     1	        MOV AL,BLUE
+ 0C34  BA 0050		     1	        MOV DX,80
+ 0C37  B9 0118		     1	        MOV CX,280
+ 0C3A			     1	        ??006E:
+ 0C3A  B9 0118		     1	        MOV CX,280
+ 0C3D  CD 10		     1	        ??006F:INT 10H
+ 0C3F  41		     1	        INC CX
+ 0C40  81 F9 012C	     1	        CMP CX,300
+ 0C44  72 F7		     1	        JB ??006F
+ 0C46  42		     1	        INC DX
+ 0C47  81 FA 00DC	     1	        CMP DX,220
+ 0C4B  72 ED		     1	        JB ??006E
+				    	DRAWRECT 250,200,330,220,BLUE
+ 0C4D  33 DB		     1	        XOR BX,BX
+ 0C4F  33 C9		     1	        XOR CX,CX
+ 0C51  33 D2		     1	        XOR DX,DX
+ 0C53  B4 0C		     1	        MOV AH,0CH
+ 0C55  A0 001E R	     1	        MOV AL,BLUE
+ 0C58  BA 00C8		     1	        MOV DX,200
+ 0C5B  B9 00FA		     1	        MOV CX,250
+ 0C5E			     1	        ??0070:
+ 0C5E  B9 00FA		     1	        MOV CX,250
+ 0C61  CD 10		     1	        ??0071:INT 10H
+ 0C63  41		     1	        INC CX
+ 0C64  81 F9 014A	     1	        CMP CX,330
+ 0C68  72 F7		     1	        JB ??0071
+ 0C6A  42		     1	        INC DX
+ 0C6B  81 FA 00DC	     1	        CMP DX,220
+ 0C6F  72 ED		     1	        JB ??0070
+				    	;N
+				    	DRAWRECT 380,80,400,220,BLUE
+ 0C71  33 DB		     1	        XOR BX,BX
+ 0C73  33 C9		     1	        XOR CX,CX
+ 0C75  33 D2		     1	        XOR DX,DX
+ 0C77  B4 0C		     1	        MOV AH,0CH
+ 0C79  A0 001E R	     1	        MOV AL,BLUE
+ 0C7C  BA 0050		     1	        MOV DX,80
+ 0C7F  B9 017C		     1	        MOV CX,380
+ 0C82			     1	        ??0072:
+ 0C82  B9 017C		     1	        MOV CX,380
+ 0C85  CD 10		     1	        ??0073:INT 10H
+ 0C87  41		     1	        INC CX
+ 0C88  81 F9 0190	     1	        CMP CX,400
+ 0C8C  72 F7		     1	        JB ??0073
+ 0C8E  42		     1	        INC DX
+ 0C8F  81 FA 00DC	     1	        CMP DX,220
+ 0C93  72 ED		     1	        JB ??0072
+				    	DRAWRECT 380,80,430,100,BLUE
+ 0C95  33 DB		     1	        XOR BX,BX
+ 0C97  33 C9		     1	        XOR CX,CX
+ 0C99  33 D2		     1	        XOR DX,DX
+ 0C9B  B4 0C		     1	        MOV AH,0CH
+ 0C9D  A0 001E R	     1	        MOV AL,BLUE
+ 0CA0  BA 0050		     1	        MOV DX,80
+ 0CA3  B9 017C		     1	        MOV CX,380
+ 0CA6			     1	        ??0074:
+ 0CA6  B9 017C		     1	        MOV CX,380
+ 0CA9  CD 10		     1	        ??0075:INT 10H
+ 0CAB  41		     1	        INC CX
+ 0CAC  81 F9 01AE	     1	        CMP CX,430
+ 0CB0  72 F7		     1	        JB ??0075
+ 0CB2  42		     1	        INC DX
+ 0CB3  83 FA 64		     1	        CMP DX,100
+ 0CB6  72 EE		     1	        JB ??0074
+				    	DRAWRECT 430,80,450,220,BLUE
+ 0CB8  33 DB		     1	        XOR BX,BX
+ 0CBA  33 C9		     1	        XOR CX,CX
+ 0CBC  33 D2		     1	        XOR DX,DX
+ 0CBE  B4 0C		     1	        MOV AH,0CH
+ 0CC0  A0 001E R	     1	        MOV AL,BLUE
+ 0CC3  BA 0050		     1	        MOV DX,80
+ 0CC6  B9 01AE		     1	        MOV CX,430
+ 0CC9			     1	        ??0076:
+ 0CC9  B9 01AE		     1	        MOV CX,430
+ 0CCC  CD 10		     1	        ??0077:INT 10H
+ 0CCE  41		     1	        INC CX
+ 0CCF  81 F9 01C2	     1	        CMP CX,450
+ 0CD3  72 F7		     1	        JB ??0077
+ 0CD5  42		     1	        INC DX
+ 0CD6  81 FA 00DC	     1	        CMP DX,220
+ 0CDA  72 ED		     1	        JB ??0076
+				    	DRAWRECT 450,200,480,220,BLUE
+ 0CDC  33 DB		     1	        XOR BX,BX
+ 0CDE  33 C9		     1	        XOR CX,CX
+ 0CE0  33 D2		     1	        XOR DX,DX
+ 0CE2  B4 0C		     1	        MOV AH,0CH
+ 0CE4  A0 001E R	     1	        MOV AL,BLUE
+ 0CE7  BA 00C8		     1	        MOV DX,200
+ 0CEA  B9 01C2		     1	        MOV CX,450
+ 0CED			     1	        ??0078:
+ 0CED  B9 01C2		     1	        MOV CX,450
+ 0CF0  CD 10		     1	        ??0079:INT 10H
+ 0CF2  41		     1	        INC CX
+ 0CF3  81 F9 01E0	     1	        CMP CX,480
+ 0CF7  72 F7		     1	        JB ??0079
+ 0CF9  42		     1	        INC DX
+ 0CFA  81 FA 00DC	     1	        CMP DX,220
+ 0CFE  72 ED		     1	        JB ??0078
+				    	DRAWRECT 480,80,500,220,BLUE
+ 0D00  33 DB		     1	        XOR BX,BX
+ 0D02  33 C9		     1	        XOR CX,CX
+ 0D04  33 D2		     1	        XOR DX,DX
+ 0D06  B4 0C		     1	        MOV AH,0CH
+ 0D08  A0 001E R	     1	        MOV AL,BLUE
+ 0D0B  BA 0050		     1	        MOV DX,80
+ 0D0E  B9 01E0		     1	        MOV CX,480
+ 0D11			     1	        ??007A:
+ 0D11  B9 01E0		     1	        MOV CX,480
+ 0D14  CD 10		     1	        ??007B:INT 10H
+ 0D16  41		     1	        INC CX
+ 0D17  81 F9 01F4	     1	        CMP CX,500
+ 0D1B  72 F7		     1	        JB ??007B
+ 0D1D  42		     1	        INC DX
+ 0D1E  81 FA 00DC	     1	        CMP DX,220
+ 0D22  72 ED		     1	        JB ??007A
+ 0D24  C3			    	RET
+ 0D25				    DRAWVICTORYIMG ENDP
+				        
+ 0D25				CODES ENDS
 				    END START
 
 
-
-
-
-
-
-
-				  
-
-
-
-
-
-
-
-
-
-
-Microsoft (R) Macro Assembler Version 6.11		    07/06/18 19:16:34
+Microsoft (R) Macro Assembler Version 6.11		    07/09/18 15:09:25
 tempfile.asm						     Symbols 2 - 1
 
 
@@ -2093,33 +1957,16 @@ Macros:
 
                 N a m e                 Type
 
-COLORSHOW  . . . . . . . . . . .	Proc
-DRAWBORDER . . . . . . . . . . .	Proc
-DRAWDEADIMG  . . . . . . . . . .	Proc
-DRAWLEVEL1 . . . . . . . . . . .	Proc
-DRAWLEVEL2 . . . . . . . . . . .	Proc
-DRAWLEVEL3 . . . . . . . . . . .	Proc
 DRAWRECT . . . . . . . . . . . .	Proc
-DRAWSTART  . . . . . . . . . . .	Proc
-DRAWVICTORYIMG . . . . . . . . .	Proc
 JUDGE  . . . . . . . . . . . . .	Proc
 LDRGI  . . . . . . . . . . . . .	Proc
-LOADBARRIER  . . . . . . . . . .	Proc
-LOADLEVEL  . . . . . . . . . . .	Proc
 MOVEDOWN . . . . . . . . . . . .	Proc
 MOVELEFT . . . . . . . . . . . .	Proc
 MOVERIGHT  . . . . . . . . . . .	Proc
 MOVEUP . . . . . . . . . . . . .	Proc
 PLYMOVE  . . . . . . . . . . . .	Proc
 RANNUM . . . . . . . . . . . . .	Proc
-SETPOSL1 . . . . . . . . . . . .	Proc
-SETPOSL2 . . . . . . . . . . . .	Proc
-SETPOSL3 . . . . . . . . . . . .	Proc
 SVRGI  . . . . . . . . . . . . .	Proc
-WORDSHOW . . . . . . . . . . . .	Proc
-WRITECONWORD . . . . . . . . . .	Proc
-WRITEFULL  . . . . . . . . . . .	Proc
-WRITESIMPLE  . . . . . . . . . .	Proc
 WRITESTARTOPTION . . . . . . . .	Proc
 
 
@@ -2127,7 +1974,7 @@ Segments and Groups:
 
                 N a m e                 Size     Length   Align   Combine Class
 
-CODES  . . . . . . . . . . . . .	16 Bit	 0CF8	  Para	  Private 
+CODES  . . . . . . . . . . . . .	16 Bit	 0D25	  Para	  Private 
 DATAS  . . . . . . . . . . . . .	16 Bit	 0082	  Para	  Private 
 STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
 
@@ -2136,125 +1983,142 @@ Procedures,  parameters and locals:
 
                 N a m e                 Type     Value    Attr
 
-CLEAN  . . . . . . . . . . . . .	P Near	 0C98	  CODES	Length= 0017 Public
-DRAWDEADSCENCE . . . . . . . . .	P Near	 0872	  CODES	Length= 025A Public
-  ??0048 . . . . . . . . . . . .	L Near	 0886	  CODES	
-  ??0049 . . . . . . . . . . . .	L Near	 0889	  CODES	
-  ??004A . . . . . . . . . . . .	L Near	 08A9	  CODES	
-  ??004B . . . . . . . . . . . .	L Near	 08AC	  CODES	
-  ??004C . . . . . . . . . . . .	L Near	 08CC	  CODES	
-  ??004D . . . . . . . . . . . .	L Near	 08CF	  CODES	
-  ??004E . . . . . . . . . . . .	L Near	 08F0	  CODES	
-  ??004F . . . . . . . . . . . .	L Near	 08F3	  CODES	
-  ??0050 . . . . . . . . . . . .	L Near	 0914	  CODES	
-  ??0051 . . . . . . . . . . . .	L Near	 0917	  CODES	
-  ??0052 . . . . . . . . . . . .	L Near	 0937	  CODES	
-  ??0053 . . . . . . . . . . . .	L Near	 093A	  CODES	
-  ??0054 . . . . . . . . . . . .	L Near	 095B	  CODES	
-  ??0055 . . . . . . . . . . . .	L Near	 095E	  CODES	
-  ??0056 . . . . . . . . . . . .	L Near	 097F	  CODES	
-  ??0057 . . . . . . . . . . . .	L Near	 0982	  CODES	
-  ??0058 . . . . . . . . . . . .	L Near	 09A3	  CODES	
-  ??0059 . . . . . . . . . . . .	L Near	 09A6	  CODES	
-  ??005A . . . . . . . . . . . .	L Near	 09C6	  CODES	
-  ??005B . . . . . . . . . . . .	L Near	 09C9	  CODES	
-  ??005C . . . . . . . . . . . .	L Near	 09EA	  CODES	
-  ??005D . . . . . . . . . . . .	L Near	 09ED	  CODES	
-  ??005E . . . . . . . . . . . .	L Near	 0A0E	  CODES	
-  ??005F . . . . . . . . . . . .	L Near	 0A11	  CODES	
-  ??0060 . . . . . . . . . . . .	L Near	 0A32	  CODES	
-  ??0061 . . . . . . . . . . . .	L Near	 0A35	  CODES	
-  ??0062 . . . . . . . . . . . .	L Near	 0A55	  CODES	
-  ??0063 . . . . . . . . . . . .	L Near	 0A58	  CODES	
-  ??0064 . . . . . . . . . . . .	L Near	 0A79	  CODES	
-  ??0065 . . . . . . . . . . . .	L Near	 0A7C	  CODES	
-  ??0066 . . . . . . . . . . . .	L Near	 0A9D	  CODES	
-  ??0067 . . . . . . . . . . . .	L Near	 0AA0	  CODES	
-  ??0068 . . . . . . . . . . . .	L Near	 0AC0	  CODES	
-DRAWVICTORYSCENCE  . . . . . . .	P Near	 0ACC	  CODES	Length= 01CC Public
-  ??0069 . . . . . . . . . . . .	L Near	 0AE0	  CODES	
-  ??006A . . . . . . . . . . . .	L Near	 0AE3	  CODES	
-  ??006B . . . . . . . . . . . .	L Near	 0B03	  CODES	
-  ??006C . . . . . . . . . . . .	L Near	 0B06	  CODES	
-  ??006D . . . . . . . . . . . .	L Near	 0B27	  CODES	
-  ??006E . . . . . . . . . . . .	L Near	 0B2A	  CODES	
-  ??006F . . . . . . . . . . . .	L Near	 0B4B	  CODES	
-  ??0070 . . . . . . . . . . . .	L Near	 0B4E	  CODES	
-  ??0071 . . . . . . . . . . . .	L Near	 0B6F	  CODES	
-  ??0072 . . . . . . . . . . . .	L Near	 0B72	  CODES	
-  ??0073 . . . . . . . . . . . .	L Near	 0B92	  CODES	
-  ??0074 . . . . . . . . . . . .	L Near	 0B95	  CODES	
-  ??0075 . . . . . . . . . . . .	L Near	 0BB6	  CODES	
-  ??0076 . . . . . . . . . . . .	L Near	 0BB9	  CODES	
-  ??0077 . . . . . . . . . . . .	L Near	 0BDA	  CODES	
-  ??0078 . . . . . . . . . . . .	L Near	 0BDD	  CODES	
-  ??0079 . . . . . . . . . . . .	L Near	 0BFE	  CODES	
-  ??007A . . . . . . . . . . . .	L Near	 0C01	  CODES	
-  ??007B . . . . . . . . . . . .	L Near	 0C21	  CODES	
-  ??007C . . . . . . . . . . . .	L Near	 0C24	  CODES	
-  ??007D . . . . . . . . . . . .	L Near	 0C45	  CODES	
-  ??007E . . . . . . . . . . . .	L Near	 0C48	  CODES	
-  ??007F . . . . . . . . . . . .	L Near	 0C69	  CODES	
-  ??0080 . . . . . . . . . . . .	L Near	 0C6C	  CODES	
-  ??0081 . . . . . . . . . . . .	L Near	 0C8C	  CODES	
-INITLEVEL1 . . . . . . . . . . .	P Near	 0407	  CODES	Length= 00FC Public
-  ??0018 . . . . . . . . . . . .	L Near	 043B	  CODES	
-  ??0019 . . . . . . . . . . . .	L Near	 043F	  CODES	
-  ??001A . . . . . . . . . . . .	L Near	 0460	  CODES	
-  ??001B . . . . . . . . . . . .	L Near	 0463	  CODES	
-  ??001C . . . . . . . . . . . .	L Near	 0483	  CODES	
-  ??001D . . . . . . . . . . . .	L Near	 0486	  CODES	
-  ??001E . . . . . . . . . . . .	L Near	 04A7	  CODES	
-  ??001F . . . . . . . . . . . .	L Near	 04AA	  CODES	
-  ??0020 . . . . . . . . . . . .	L Near	 04CB	  CODES	
-  ??0021 . . . . . . . . . . . .	L Near	 04CE	  CODES	
-  ??0022 . . . . . . . . . . . .	L Near	 04EF	  CODES	
-  ??0023 . . . . . . . . . . . .	L Near	 04F2	  CODES	
-INITLEVEL2 . . . . . . . . . . .	P Near	 0503	  CODES	Length= 0144 Public
-  ??0024 . . . . . . . . . . . .	L Near	 0537	  CODES	
-  ??0025 . . . . . . . . . . . .	L Near	 053B	  CODES	
-  ??0026 . . . . . . . . . . . .	L Near	 055C	  CODES	
-  ??0027 . . . . . . . . . . . .	L Near	 055F	  CODES	
-  ??0028 . . . . . . . . . . . .	L Near	 057F	  CODES	
-  ??0029 . . . . . . . . . . . .	L Near	 0582	  CODES	
-  ??002A . . . . . . . . . . . .	L Near	 05A3	  CODES	
-  ??002B . . . . . . . . . . . .	L Near	 05A6	  CODES	
-  ??002C . . . . . . . . . . . .	L Near	 05C7	  CODES	
-  ??002D . . . . . . . . . . . .	L Near	 05CA	  CODES	
-  ??002E . . . . . . . . . . . .	L Near	 05EB	  CODES	
-  ??002F . . . . . . . . . . . .	L Near	 05EE	  CODES	
-  ??0030 . . . . . . . . . . . .	L Near	 060F	  CODES	
-  ??0031 . . . . . . . . . . . .	L Near	 0612	  CODES	
-  ??0032 . . . . . . . . . . . .	L Near	 0633	  CODES	
-  ??0033 . . . . . . . . . . . .	L Near	 0636	  CODES	
-INITLEVEL3 . . . . . . . . . . .	P Near	 0647	  CODES	Length= 0164 Public
-  ??0034 . . . . . . . . . . . .	L Near	 067B	  CODES	
-  ??0035 . . . . . . . . . . . .	L Near	 067F	  CODES	
-  ??0036 . . . . . . . . . . . .	L Near	 06A0	  CODES	
-  ??0037 . . . . . . . . . . . .	L Near	 06A3	  CODES	
-  ??0038 . . . . . . . . . . . .	L Near	 06C3	  CODES	
-  ??0039 . . . . . . . . . . . .	L Near	 06C6	  CODES	
-  ??003A . . . . . . . . . . . .	L Near	 06E7	  CODES	
-  ??003B . . . . . . . . . . . .	L Near	 06EA	  CODES	
-  NEXTBARRIER  . . . . . . . . .	L Near	 0750	  CODES	
-  ??003D . . . . . . . . . . . .	L Near	 078F	  CODES	
-  ??003E . . . . . . . . . . . .	L Near	 0793	  CODES	
-INITSTARTPAGE  . . . . . . . . .	P Near	 0365	  CODES	Length= 00A2 Public
-  ??0015 . . . . . . . . . . . .	L Near	 036F	  CODES	
-  ??0016 . . . . . . . . . . . .	L Near	 03B5	  CODES	
-  ??0017 . . . . . . . . . . . .	L Near	 03C8	  CODES	
-PLYOPERATE . . . . . . . . . . .	P Near	 07AB	  CODES	Length= 00C7 Public
-  ??0044 . . . . . . . . . . . .	L Near	 07C3	  CODES	
-  ??0045 . . . . . . . . . . . .	L Near	 07C7	  CODES	
-  ??003F . . . . . . . . . . . .	L Near	 07EA	  CODES	
-  ??0040 . . . . . . . . . . . .	L Near	 0802	  CODES	
-  ??0041 . . . . . . . . . . . .	L Near	 081A	  CODES	
-  ??0042 . . . . . . . . . . . .	L Near	 0832	  CODES	
-  ??0043 . . . . . . . . . . . .	L Near	 084A	  CODES	
-  ??0046 . . . . . . . . . . . .	L Near	 085D	  CODES	
-  ??0047 . . . . . . . . . . . .	L Near	 0861	  CODES	
-READFILE . . . . . . . . . . . .	P Near	 0CAF	  CODES	Length= 0024 Public
-WRITEFILE  . . . . . . . . . . .	P Near	 0CD3	  CODES	Length= 0025 Public
+CLEAN  . . . . . . . . . . . . .	P Near	 0853	  CODES	Length= 0017 Public
+COLORSHOW  . . . . . . . . . . .	P Near	 0347	  CODES	Length= 0007 Public
+DRAWBORDER . . . . . . . . . . .	P Near	 039D	  CODES	Length= 001D Public
+  NEXTLINE . . . . . . . . . . .	L Near	 03A1	  CODES	
+  FULL . . . . . . . . . . . . .	L Near	 03B5	  CODES	
+  FIN  . . . . . . . . . . . . .	L Near	 03BA	  CODES	
+DRAWDEADIMG  . . . . . . . . . .	P Near	 091F	  CODES	Length= 023C Public
+  ??0044 . . . . . . . . . . . .	L Near	 0930	  CODES	
+  ??0045 . . . . . . . . . . . .	L Near	 0933	  CODES	
+  ??0046 . . . . . . . . . . . .	L Near	 0953	  CODES	
+  ??0047 . . . . . . . . . . . .	L Near	 0956	  CODES	
+  ??0048 . . . . . . . . . . . .	L Near	 0976	  CODES	
+  ??0049 . . . . . . . . . . . .	L Near	 0979	  CODES	
+  ??004A . . . . . . . . . . . .	L Near	 099A	  CODES	
+  ??004B . . . . . . . . . . . .	L Near	 099D	  CODES	
+  ??004C . . . . . . . . . . . .	L Near	 09BE	  CODES	
+  ??004D . . . . . . . . . . . .	L Near	 09C1	  CODES	
+  ??004E . . . . . . . . . . . .	L Near	 09E1	  CODES	
+  ??004F . . . . . . . . . . . .	L Near	 09E4	  CODES	
+  ??0050 . . . . . . . . . . . .	L Near	 0A05	  CODES	
+  ??0051 . . . . . . . . . . . .	L Near	 0A08	  CODES	
+  ??0052 . . . . . . . . . . . .	L Near	 0A29	  CODES	
+  ??0053 . . . . . . . . . . . .	L Near	 0A2C	  CODES	
+  ??0054 . . . . . . . . . . . .	L Near	 0A4D	  CODES	
+  ??0055 . . . . . . . . . . . .	L Near	 0A50	  CODES	
+  ??0056 . . . . . . . . . . . .	L Near	 0A70	  CODES	
+  ??0057 . . . . . . . . . . . .	L Near	 0A73	  CODES	
+  ??0058 . . . . . . . . . . . .	L Near	 0A94	  CODES	
+  ??0059 . . . . . . . . . . . .	L Near	 0A97	  CODES	
+  ??005A . . . . . . . . . . . .	L Near	 0AB8	  CODES	
+  ??005B . . . . . . . . . . . .	L Near	 0ABB	  CODES	
+  ??005C . . . . . . . . . . . .	L Near	 0ADC	  CODES	
+  ??005D . . . . . . . . . . . .	L Near	 0ADF	  CODES	
+  ??005E . . . . . . . . . . . .	L Near	 0AFF	  CODES	
+  ??005F . . . . . . . . . . . .	L Near	 0B02	  CODES	
+  ??0060 . . . . . . . . . . . .	L Near	 0B23	  CODES	
+  ??0061 . . . . . . . . . . . .	L Near	 0B26	  CODES	
+  ??0062 . . . . . . . . . . . .	L Near	 0B47	  CODES	
+  ??0063 . . . . . . . . . . . .	L Near	 0B4A	  CODES	
+DRAWDEADSCENCE . . . . . . . . .	P Near	 083F	  CODES	Length= 000A Public
+DRAWLEVEL1 . . . . . . . . . . .	P Near	 0403	  CODES	Length= 00B4 Public
+  ??0015 . . . . . . . . . . . .	L Near	 0414	  CODES	
+  ??0016 . . . . . . . . . . . .	L Near	 0417	  CODES	
+  ??0017 . . . . . . . . . . . .	L Near	 0437	  CODES	
+  ??0018 . . . . . . . . . . . .	L Near	 043A	  CODES	
+  ??0019 . . . . . . . . . . . .	L Near	 045B	  CODES	
+  ??001A . . . . . . . . . . . .	L Near	 045E	  CODES	
+  ??001B . . . . . . . . . . . .	L Near	 047F	  CODES	
+  ??001C . . . . . . . . . . . .	L Near	 0482	  CODES	
+  ??001D . . . . . . . . . . . .	L Near	 04A3	  CODES	
+  ??001E . . . . . . . . . . . .	L Near	 04A6	  CODES	
+DRAWLEVEL2 . . . . . . . . . . .	P Near	 04EB	  CODES	Length= 00FC Public
+  ??0021 . . . . . . . . . . . .	L Near	 04FC	  CODES	
+  ??0022 . . . . . . . . . . . .	L Near	 04FF	  CODES	
+  ??0023 . . . . . . . . . . . .	L Near	 051F	  CODES	
+  ??0024 . . . . . . . . . . . .	L Near	 0522	  CODES	
+  ??0025 . . . . . . . . . . . .	L Near	 0543	  CODES	
+  ??0026 . . . . . . . . . . . .	L Near	 0546	  CODES	
+  ??0027 . . . . . . . . . . . .	L Near	 0567	  CODES	
+  ??0028 . . . . . . . . . . . .	L Near	 056A	  CODES	
+  ??0029 . . . . . . . . . . . .	L Near	 058B	  CODES	
+  ??002A . . . . . . . . . . . .	L Near	 058E	  CODES	
+  ??002B . . . . . . . . . . . .	L Near	 05AF	  CODES	
+  ??002C . . . . . . . . . . . .	L Near	 05B2	  CODES	
+  ??002D . . . . . . . . . . . .	L Near	 05D3	  CODES	
+  ??002E . . . . . . . . . . . .	L Near	 05D6	  CODES	
+DRAWLEVEL3 . . . . . . . . . . .	P Near	 06A1	  CODES	Length= 006F Public
+  ??0031 . . . . . . . . . . . .	L Near	 06B2	  CODES	
+  ??0032 . . . . . . . . . . . .	L Near	 06B5	  CODES	
+  ??0033 . . . . . . . . . . . .	L Near	 06D5	  CODES	
+  ??0034 . . . . . . . . . . . .	L Near	 06D8	  CODES	
+  ??0035 . . . . . . . . . . . .	L Near	 06F9	  CODES	
+  ??0036 . . . . . . . . . . . .	L Near	 06FC	  CODES	
+DRAWSTART  . . . . . . . . . . .	P Near	 03BA	  CODES	Length= 003F Public
+DRAWVICTORYIMG . . . . . . . . .	P Near	 0B77	  CODES	Length= 01AE Public
+  ??0064 . . . . . . . . . . . .	L Near	 0B88	  CODES	
+  ??0065 . . . . . . . . . . . .	L Near	 0B8B	  CODES	
+  ??0066 . . . . . . . . . . . .	L Near	 0BAB	  CODES	
+  ??0067 . . . . . . . . . . . .	L Near	 0BAE	  CODES	
+  ??0068 . . . . . . . . . . . .	L Near	 0BCF	  CODES	
+  ??0069 . . . . . . . . . . . .	L Near	 0BD2	  CODES	
+  ??006A . . . . . . . . . . . .	L Near	 0BF3	  CODES	
+  ??006B . . . . . . . . . . . .	L Near	 0BF6	  CODES	
+  ??006C . . . . . . . . . . . .	L Near	 0C17	  CODES	
+  ??006D . . . . . . . . . . . .	L Near	 0C1A	  CODES	
+  ??006E . . . . . . . . . . . .	L Near	 0C3A	  CODES	
+  ??006F . . . . . . . . . . . .	L Near	 0C3D	  CODES	
+  ??0070 . . . . . . . . . . . .	L Near	 0C5E	  CODES	
+  ??0071 . . . . . . . . . . . .	L Near	 0C61	  CODES	
+  ??0072 . . . . . . . . . . . .	L Near	 0C82	  CODES	
+  ??0073 . . . . . . . . . . . .	L Near	 0C85	  CODES	
+  ??0074 . . . . . . . . . . . .	L Near	 0CA6	  CODES	
+  ??0075 . . . . . . . . . . . .	L Near	 0CA9	  CODES	
+  ??0076 . . . . . . . . . . . .	L Near	 0CC9	  CODES	
+  ??0077 . . . . . . . . . . . .	L Near	 0CCC	  CODES	
+  ??0078 . . . . . . . . . . . .	L Near	 0CED	  CODES	
+  ??0079 . . . . . . . . . . . .	L Near	 0CF0	  CODES	
+  ??007A . . . . . . . . . . . .	L Near	 0D11	  CODES	
+  ??007B . . . . . . . . . . . .	L Near	 0D14	  CODES	
+DRAWVICTORYSCENCE  . . . . . . .	P Near	 0849	  CODES	Length= 000A Public
+INITLEVEL1 . . . . . . . . . . .	P Near	 04B7	  CODES	Length= 0034 Public
+  ??001F . . . . . . . . . . . .	L Near	 04D3	  CODES	
+  ??0020 . . . . . . . . . . . .	L Near	 04D7	  CODES	
+INITLEVEL2 . . . . . . . . . . .	P Near	 0710	  CODES	Length= 0034 Public
+  ??0037 . . . . . . . . . . . .	L Near	 072C	  CODES	
+  ??0038 . . . . . . . . . . . .	L Near	 0730	  CODES	
+INITLEVEL3 . . . . . . . . . . .	P Near	 0744	  CODES	Length= 0034 Public
+  ??0039 . . . . . . . . . . . .	L Near	 0760	  CODES	
+  ??003A . . . . . . . . . . . .	L Near	 0764	  CODES	
+INITSTARTPAGE  . . . . . . . . .	P Near	 03F9	  CODES	Length= 000A Public
+LOADBARRIER  . . . . . . . . . .	P Near	 05E7	  CODES	Length= 00BA Public
+  NEXTPOINT  . . . . . . . . . .	Word	 bp - 0002
+  NEXTBARRIER  . . . . . . . . .	L Near	 0643	  CODES	
+  ??002F . . . . . . . . . . . .	L Near	 0682	  CODES	
+  ??0030 . . . . . . . . . . . .	L Near	 0686	  CODES	
+LOADLEVEL  . . . . . . . . . . .	P Near	 08B3	  CODES	Length= 0021 Public
+PLYOPERATE . . . . . . . . . . .	P Near	 0778	  CODES	Length= 00C7 Public
+  ??0040 . . . . . . . . . . . .	L Near	 0790	  CODES	
+  ??0041 . . . . . . . . . . . .	L Near	 0794	  CODES	
+  ??003B . . . . . . . . . . . .	L Near	 07B7	  CODES	
+  ??003C . . . . . . . . . . . .	L Near	 07CF	  CODES	
+  ??003D . . . . . . . . . . . .	L Near	 07E7	  CODES	
+  ??003E . . . . . . . . . . . .	L Near	 07FF	  CODES	
+  ??003F . . . . . . . . . . . .	L Near	 0817	  CODES	
+  ??0042 . . . . . . . . . . . .	L Near	 082A	  CODES	
+  ??0043 . . . . . . . . . . . .	L Near	 082E	  CODES	
+READFILE . . . . . . . . . . . .	P Near	 086A	  CODES	Length= 0024 Public
+SETPOSL1 . . . . . . . . . . . .	P Near	 08D4	  CODES	Length= 0019 Public
+SETPOSL2 . . . . . . . . . . . .	P Near	 08ED	  CODES	Length= 0019 Public
+SETPOSL3 . . . . . . . . . . . .	P Near	 0906	  CODES	Length= 0019 Public
+WORDSHOW . . . . . . . . . . . .	P Near	 034E	  CODES	Length= 0007 Public
+WRITECONWORD . . . . . . . . . .	P Near	 0B5B	  CODES	Length= 001C Public
+  WRITENEXT  . . . . . . . . . .	L Near	 0B6B	  CODES	
+WRITEFILE  . . . . . . . . . . .	P Near	 088E	  CODES	Length= 0025 Public
+WRITEFULL  . . . . . . . . . . .	P Near	 038B	  CODES	Length= 0012 Public
+WRITESIMPLE  . . . . . . . . . .	P Near	 0355	  CODES	Length= 0036 Public
 
 
 Symbols:
@@ -2291,7 +2155,7 @@ DELTX2 . . . . . . . . . . . . .	Word	 0026	  DATAS
 DELTY1 . . . . . . . . . . . . .	Word	 0024	  DATAS	
 DELTY2 . . . . . . . . . . . . .	Word	 0028	  DATAS	
 EGAME  . . . . . . . . . . . . .	Byte	 0017	  DATAS	
-EXITGAME . . . . . . . . . . . .	L Near	 0361	  CODES	
+EXITGAME . . . . . . . . . . . .	L Near	 0343	  CODES	
 FILENAME . . . . . . . . . . . .	Byte	 0079	  DATAS	
 HANDLE . . . . . . . . . . . . .	Word	 0075	  DATAS	
 LENCONSTR  . . . . . . . . . . .	Word	 0073	  DATAS	

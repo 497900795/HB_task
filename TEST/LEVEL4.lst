@@ -1,0 +1,296 @@
+Microsoft (R) Macro Assembler Version 6.11		    07/09/18 16:10:56
+tempfile.asm						     Page 1 - 1
+
+
+ 0000				DATAS SEGMENT
+				    ;此处输入数据段代码
+				    ;颜色变量
+ 0000 0B			     BLUE DB 0BH
+ 0001 0C			     RED DB 0CH
+ 0002 0F			     WHITE DB 0FH
+ 0003 00			     BLACK DB 0
+				    ;第四关的移动障碍
+				    ;MBARRIER1
+ 0004 0064			    MBARRIER1X1 DW 100
+ 0006 003C			    MBARRIER1Y1 DW 60
+ 0008 0082			    MBARRIER1X2 DW 130
+ 000A 005A			    MBARRIER1Y2 DW 90
+ 000C 01			    WAY1 DB 1
+				    ;MBARRIER2
+ 000D 00FA			    MBARRIER2X1 DW 250
+ 000F 00C8			    MBARRIER2Y1 DW 200
+ 0011 010E			    MBARRIER2X2 DW 270
+ 0013 012C			    MBARRIER2Y2 DW 300
+ 0015 02			    WAY2 DB 2
+				    ;MBARRIER3
+ 0016 015E			    MBARRIER3X1 DW 350
+ 0018 00C8			    MBARRIER3Y1 DW 200
+ 001A 01F4			    MBARRIER3X2 DW 500
+ 001C 00DC			    MBARRIER3Y2 DW 220
+ 001E 01			    WAY3 DB 1       
+ 001F				DATAS ENDS
+
+ 0000				STACKS SEGMENT
+				    ;此处输入堆栈段代码
+ 0000				STACKS ENDS
+
+ 0000				CODES SEGMENT
+				    ASSUME CS:CODES,DS:DATAS,SS:STACKS
+ 0000				START:
+ 0000  B8 ---- R		    MOV AX,DATAS
+ 0003  8E D8			    MOV DS,AX
+				    
+				     ;绘制矩形,来拼出场景
+				     ;参数分别为第一个点的坐标,第二个点的坐标,颜色
+				     DRAWRECT MACRO X1,Y1,X2,Y2,COLOR
+				        LOCAL ROW,COL
+				        XOR BX,BX
+				        XOR CX,CX
+				        XOR DX,DX
+				        MOV AH,0CH
+				        MOV AL,COLOR
+				        MOV DX,Y1
+				        MOV CX,X1
+				        ROW:
+				        MOV CX,X1
+				        COL:INT 10H
+				        INC CX
+				        CMP CX,X2
+				        JB COL
+				        INC DX
+				        CMP DX,Y2
+				        JB ROW
+				    ENDM
+				    
+				    ;此处输入代码段代码
+				    
+ 0005  E8 001E			    CALL DRAWLEVEL4
+				    ;CALL BARRIERMOVE
+				    
+ 0008  B4 07			    MOV AH,7
+ 000A  CD 21			    INT 21H
+				    
+ 000C  B4 4C			    MOV AH,4CH
+ 000E  CD 21			    INT 21H
+				    
+				    
+				    
+ 0010				    COLORSHOW PROC
+ 0010  B4 00			        MOV AH,0
+ 0012  B0 10			        MOV AL,10H
+ 0014  CD 10			        INT 10H
+ 0016  C3			        RET
+ 0017				   	COLORSHOW ENDP
+				   	
+				   	;清屏
+ 0017				    CLEAN PROC
+ 0017  B0 00			        MOV AL,0
+ 0019  33 C9			        XOR CX,CX
+ 001B  B6 19			        MOV DH,25
+ 001D  B2 4E			        MOV DL,78
+ 001F  B7 00			        MOV BH,0
+ 0021  B4 07			        MOV AH,7
+ 0023  CD 10			        INT 10H
+ 0025  C3			        RET
+ 0026				    CLEAN ENDP
+				   	
+				   	;方块内会移动的障碍
+ 0026				   	DRAWLEVEL4 PROC
+ 0026  E8 FFEE			   		CALL CLEAN
+ 0029  E8 FFE4			   		CALL COLORSHOW
+				        ;先绘制边框,后生成随机障碍物
+				        DRAWRECT 50,50,600,60,BLUE
+ 002C  33 DB		     1	        XOR BX,BX
+ 002E  33 C9		     1	        XOR CX,CX
+ 0030  33 D2		     1	        XOR DX,DX
+ 0032  B4 0C		     1	        MOV AH,0CH
+ 0034  A0 0000 R	     1	        MOV AL,BLUE
+ 0037  BA 0032		     1	        MOV DX,50
+ 003A  B9 0032		     1	        MOV CX,50
+ 003D			     1	        ??0000:
+ 003D  B9 0032		     1	        MOV CX,50
+ 0040  CD 10		     1	        ??0001:INT 10H
+ 0042  41		     1	        INC CX
+ 0043  81 F9 0258	     1	        CMP CX,600
+ 0047  72 F7		     1	        JB ??0001
+ 0049  42		     1	        INC DX
+ 004A  83 FA 3C		     1	        CMP DX,60
+ 004D  72 EE		     1	        JB ??0000
+				        DRAWRECT 50,290,600,300,BLUE
+ 004F  33 DB		     1	        XOR BX,BX
+ 0051  33 C9		     1	        XOR CX,CX
+ 0053  33 D2		     1	        XOR DX,DX
+ 0055  B4 0C		     1	        MOV AH,0CH
+ 0057  A0 0000 R	     1	        MOV AL,BLUE
+ 005A  BA 0122		     1	        MOV DX,290
+ 005D  B9 0032		     1	        MOV CX,50
+ 0060			     1	        ??0002:
+ 0060  B9 0032		     1	        MOV CX,50
+ 0063  CD 10		     1	        ??0003:INT 10H
+ 0065  41		     1	        INC CX
+ 0066  81 F9 0258	     1	        CMP CX,600
+ 006A  72 F7		     1	        JB ??0003
+ 006C  42		     1	        INC DX
+ 006D  81 FA 012C	     1	        CMP DX,300
+ 0071  72 ED		     1	        JB ??0002
+				        DRAWRECT 590,60,600,290,RED
+ 0073  33 DB		     1	        XOR BX,BX
+ 0075  33 C9		     1	        XOR CX,CX
+ 0077  33 D2		     1	        XOR DX,DX
+ 0079  B4 0C		     1	        MOV AH,0CH
+ 007B  A0 0001 R	     1	        MOV AL,RED
+ 007E  BA 003C		     1	        MOV DX,60
+ 0081  B9 024E		     1	        MOV CX,590
+ 0084			     1	        ??0004:
+ 0084  B9 024E		     1	        MOV CX,590
+ 0087  CD 10		     1	        ??0005:INT 10H
+ 0089  41		     1	        INC CX
+ 008A  81 F9 0258	     1	        CMP CX,600
+ 008E  72 F7		     1	        JB ??0005
+ 0090  42		     1	        INC DX
+ 0091  81 FA 0122	     1	        CMP DX,290
+ 0095  72 ED		     1	        JB ??0004
+ 0097  E8 0001			        CALL LOADMOVEBARRIER
+ 009A  C3			        RET
+ 009B				    DRAWLEVEL4 ENDP
+				   	
+ 009B				   	LOADMOVEBARRIER PROC
+				   		DRAWRECT MBARRIER1X1,MBARRIER1Y1,MBARRIER1X2,MBARRIER1Y2,BLUE
+ 009B  33 DB		     1	        XOR BX,BX
+ 009D  33 C9		     1	        XOR CX,CX
+ 009F  33 D2		     1	        XOR DX,DX
+ 00A1  B4 0C		     1	        MOV AH,0CH
+ 00A3  A0 0000 R	     1	        MOV AL,BLUE
+ 00A6  8B 16 0006 R	     1	        MOV DX,MBARRIER1Y1
+ 00AA  8B 0E 0004 R	     1	        MOV CX,MBARRIER1X1
+ 00AE			     1	        ??0006:
+ 00AE  8B 0E 0004 R	     1	        MOV CX,MBARRIER1X1
+ 00B2  CD 10		     1	        ??0007:INT 10H
+ 00B4  41		     1	        INC CX
+ 00B5  3B 0E 0008 R	     1	        CMP CX,MBARRIER1X2
+ 00B9  72 F7		     1	        JB ??0007
+ 00BB  42		     1	        INC DX
+ 00BC  3B 16 000A R	     1	        CMP DX,MBARRIER1Y2
+ 00C0  72 EC		     1	        JB ??0006
+				   		DRAWRECT MBARRIER2X1,MBARRIER2Y1,MBARRIER2X2,MBARRIER2Y2,BLUE
+ 00C2  33 DB		     1	        XOR BX,BX
+ 00C4  33 C9		     1	        XOR CX,CX
+ 00C6  33 D2		     1	        XOR DX,DX
+ 00C8  B4 0C		     1	        MOV AH,0CH
+ 00CA  A0 0000 R	     1	        MOV AL,BLUE
+ 00CD  8B 16 000F R	     1	        MOV DX,MBARRIER2Y1
+ 00D1  8B 0E 000D R	     1	        MOV CX,MBARRIER2X1
+ 00D5			     1	        ??0008:
+ 00D5  8B 0E 000D R	     1	        MOV CX,MBARRIER2X1
+ 00D9  CD 10		     1	        ??0009:INT 10H
+ 00DB  41		     1	        INC CX
+ 00DC  3B 0E 0011 R	     1	        CMP CX,MBARRIER2X2
+ 00E0  72 F7		     1	        JB ??0009
+ 00E2  42		     1	        INC DX
+ 00E3  3B 16 0013 R	     1	        CMP DX,MBARRIER2Y2
+ 00E7  72 EC		     1	        JB ??0008
+				   		DRAWRECT MBARRIER3X1,MBARRIER3Y1,MBARRIER3X2,MBARRIER3Y2,BLUE
+ 00E9  33 DB		     1	        XOR BX,BX
+ 00EB  33 C9		     1	        XOR CX,CX
+ 00ED  33 D2		     1	        XOR DX,DX
+ 00EF  B4 0C		     1	        MOV AH,0CH
+ 00F1  A0 0000 R	     1	        MOV AL,BLUE
+ 00F4  8B 16 0018 R	     1	        MOV DX,MBARRIER3Y1
+ 00F8  8B 0E 0016 R	     1	        MOV CX,MBARRIER3X1
+ 00FC			     1	        ??000A:
+ 00FC  8B 0E 0016 R	     1	        MOV CX,MBARRIER3X1
+ 0100  CD 10		     1	        ??000B:INT 10H
+ 0102  41		     1	        INC CX
+ 0103  3B 0E 001A R	     1	        CMP CX,MBARRIER3X2
+ 0107  72 F7		     1	        JB ??000B
+ 0109  42		     1	        INC DX
+ 010A  3B 16 001C R	     1	        CMP DX,MBARRIER3Y2
+ 010E  72 EC		     1	        JB ??000A
+ 0110  C3			   		RET
+ 0111				   	LOADMOVEBARRIER ENDP
+				   	
+ 0111				CODES ENDS
+				    END START
+
+
+
+
+
+
+
+
+
+
+
+
+Microsoft (R) Macro Assembler Version 6.11		    07/09/18 16:10:56
+tempfile.asm						     Symbols 2 - 1
+
+
+
+
+Macros:
+
+                N a m e                 Type
+
+DRAWRECT . . . . . . . . . . . .	Proc
+
+
+Segments and Groups:
+
+                N a m e                 Size     Length   Align   Combine Class
+
+CODES  . . . . . . . . . . . . .	16 Bit	 0111	  Para	  Private 
+DATAS  . . . . . . . . . . . . .	16 Bit	 001F	  Para	  Private 
+STACKS . . . . . . . . . . . . .	16 Bit	 0000	  Para	  Private 
+
+
+Procedures,  parameters and locals:
+
+                N a m e                 Type     Value    Attr
+
+CLEAN  . . . . . . . . . . . . .	P Near	 0017	  CODES	Length= 000F Public
+COLORSHOW  . . . . . . . . . . .	P Near	 0010	  CODES	Length= 0007 Public
+DRAWLEVEL4 . . . . . . . . . . .	P Near	 0026	  CODES	Length= 0075 Public
+  ??0000 . . . . . . . . . . . .	L Near	 003D	  CODES	
+  ??0001 . . . . . . . . . . . .	L Near	 0040	  CODES	
+  ??0002 . . . . . . . . . . . .	L Near	 0060	  CODES	
+  ??0003 . . . . . . . . . . . .	L Near	 0063	  CODES	
+  ??0004 . . . . . . . . . . . .	L Near	 0084	  CODES	
+  ??0005 . . . . . . . . . . . .	L Near	 0087	  CODES	
+LOADMOVEBARRIER  . . . . . . . .	P Near	 009B	  CODES	Length= 0076 Public
+  ??0006 . . . . . . . . . . . .	L Near	 00AE	  CODES	
+  ??0007 . . . . . . . . . . . .	L Near	 00B2	  CODES	
+  ??0008 . . . . . . . . . . . .	L Near	 00D5	  CODES	
+  ??0009 . . . . . . . . . . . .	L Near	 00D9	  CODES	
+  ??000A . . . . . . . . . . . .	L Near	 00FC	  CODES	
+  ??000B . . . . . . . . . . . .	L Near	 0100	  CODES	
+
+
+Symbols:
+
+                N a m e                 Type     Value    Attr
+
+BLACK  . . . . . . . . . . . . .	Byte	 0003	  DATAS	
+BLUE . . . . . . . . . . . . . .	Byte	 0000	  DATAS	
+MBARRIER1X1  . . . . . . . . . .	Word	 0004	  DATAS	
+MBARRIER1X2  . . . . . . . . . .	Word	 0008	  DATAS	
+MBARRIER1Y1  . . . . . . . . . .	Word	 0006	  DATAS	
+MBARRIER1Y2  . . . . . . . . . .	Word	 000A	  DATAS	
+MBARRIER2X1  . . . . . . . . . .	Word	 000D	  DATAS	
+MBARRIER2X2  . . . . . . . . . .	Word	 0011	  DATAS	
+MBARRIER2Y1  . . . . . . . . . .	Word	 000F	  DATAS	
+MBARRIER2Y2  . . . . . . . . . .	Word	 0013	  DATAS	
+MBARRIER3X1  . . . . . . . . . .	Word	 0016	  DATAS	
+MBARRIER3X2  . . . . . . . . . .	Word	 001A	  DATAS	
+MBARRIER3Y1  . . . . . . . . . .	Word	 0018	  DATAS	
+MBARRIER3Y2  . . . . . . . . . .	Word	 001C	  DATAS	
+RED  . . . . . . . . . . . . . .	Byte	 0001	  DATAS	
+START  . . . . . . . . . . . . .	L Near	 0000	  CODES	
+WAY1 . . . . . . . . . . . . . .	Byte	 000C	  DATAS	
+WAY2 . . . . . . . . . . . . . .	Byte	 0015	  DATAS	
+WAY3 . . . . . . . . . . . . . .	Byte	 001E	  DATAS	
+WHITE  . . . . . . . . . . . . .	Byte	 0002	  DATAS	
+
+	   0 Warnings
+	   0 Errors
